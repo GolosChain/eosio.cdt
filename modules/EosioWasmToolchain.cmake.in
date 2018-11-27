@@ -1,11 +1,14 @@
 message(STATUS "Setting up Eosio Wasm Toolchain @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@ at @CDT_ROOT_DIR@")
-set(CMAKE_SYSTEM_NAME WebAssembly)
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_CROSSCOMPILING 1)
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
 
 set(EOSIO_CDT_VERSION "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@")
 set(EOSIO_WASMSDK_VERSION "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@")
 
-set(CMAKE_C_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cc")
-set(CMAKE_CXX_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cpp")
+set(CMAKE_C_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cc" CACHE PATH "cc" FORCE)
+set(CMAKE_CXX_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cpp" CACHE PATH "cxx" FORCE)
 
 set(CMAKE_C_FLAGS " -O3 ")
 set(CMAKE_CXX_FLAGS " -O3 ")
@@ -26,6 +29,10 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
 # hack for OSX
 set(CMAKE_OSX_SYSROOT="@SYSROOT_DIR@")
 set(CMAKE_OSX_DEPLOYMENT_TARGET="")
+include_directories(
+      @CDT_ROOT_DIR@/eosio.cdt/include/libcxx
+      @CDT_ROOT_DIR@/eosio.cdt/include/libc
+      @CDT_ROOT_DIR@/eosio.cdt/include/)
 
 macro(add_contract CONTRACT_NAME TARGET)
    add_executable( ${TARGET}.wasm ${ARGN} )
