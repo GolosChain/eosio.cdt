@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <memory>
 
-#include <boost/multi_index/mem_fun.hpp>
 #include <boost/intrusive_ptr.hpp>
 
 #include <eosiolib/action.h>
@@ -26,6 +25,34 @@
 namespace eosio {
 
 constexpr static inline name same_payer{};
+
+template<class Class,typename Type,Type (Class::*PtrToMemberFunction)()const>
+struct const_mem_fun
+{
+  typedef typename std::remove_reference<Type>::type result_type;
+
+  template<typename ChainedPtr>
+
+  auto operator()(const ChainedPtr& x)const -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::value, Type>
+  {
+    return operator()(*x);
+  }
+
+  Type operator()(const Class& x)const
+  {
+    return (x.*PtrToMemberFunction)();
+  }
+
+  Type operator()(const std::reference_wrapper<const Class>& x)const
+  {
+    return operator()(x.get());
+  }
+
+  Type operator()(const std::reference_wrapper<Class>& x)const
+  {
+    return operator()(x.get());
+  }
+};
 
 template<typename T, typename MultiIndex>
 struct multi_index_item: public T {
@@ -50,8 +77,6 @@ inline void intrusive_ptr_release(eosio::multi_index_item<T, MultiIndex>* obj) {
     --obj->ref_cnt_;
     if (!obj->ref_cnt_) delete obj;
 }
-
-using boost::multi_index::const_mem_fun;
 
 template<index_name_t IndexName, typename Extractor>
 struct indexed_by {
