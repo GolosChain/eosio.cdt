@@ -11,8 +11,6 @@
 #include <algorithm>
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
-
 #include <eosiolib/action.h>
 #include <eosiolib/name.hpp>
 #include <eosiolib/serialize.hpp>
@@ -54,6 +52,117 @@ struct const_mem_fun
   }
 };
 
+//
+//  intrusive_ptr
+//
+//  A smart pointer that uses intrusive reference counting.
+//
+//  Relies on unqualified calls to
+//  
+//      void intrusive_ptr_add_ref(T * p);
+//      void intrusive_ptr_release(T * p);
+//
+//          (p != 0)
+//
+//  The object is responsible for destroying itself.
+//
+template<class T> class intrusive_ptr
+{
+private:
+
+    typedef intrusive_ptr this_type;
+
+public:
+
+    typedef T element_type;
+
+    intrusive_ptr() BOOST_NOEXCEPT : px( 0 )
+    {
+    }
+
+    intrusive_ptr( T * p, bool add_ref = true ): px( p )
+    {
+        if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
+    }
+
+    intrusive_ptr(intrusive_ptr const & rhs): px( rhs.px )
+    {
+        if( px != 0 ) intrusive_ptr_add_ref( px );
+    }
+
+    ~intrusive_ptr()
+    {
+        if( px != 0 ) intrusive_ptr_release( px );
+    }
+
+    intrusive_ptr & operator=(intrusive_ptr const & rhs)
+    {
+        this_type(rhs).swap(*this);
+        return *this;
+    }
+
+    intrusive_ptr & operator=(T * rhs)
+    {
+        this_type(rhs).swap(*this);
+        return *this;
+    }
+
+    void reset() BOOST_NOEXCEPT
+    {
+        this_type().swap( *this );
+    }
+
+    void reset( T * rhs )
+    {
+        this_type( rhs ).swap( *this );
+    }
+
+    void reset( T * rhs, bool add_ref )
+    {
+        this_type( rhs, add_ref ).swap( *this );
+    }
+
+    T * get() const BOOST_NOEXCEPT
+    {
+        return px;
+    }
+
+    T * detach() BOOST_NOEXCEPT
+    {
+        T * ret = px;
+        px = 0;
+        return ret;
+    }
+
+    operator bool () const BOOST_NOEXCEPT
+    {
+        return px != 0;
+    }
+
+    T & operator*() const
+    {
+        BOOST_ASSERT( px != 0 );
+        return *px;
+    }
+
+    T * operator->() const
+    {
+        BOOST_ASSERT( px != 0 );
+        return px;
+    }
+
+    void swap(intrusive_ptr & rhs) BOOST_NOEXCEPT
+    {
+        T * tmp = px;
+        px = rhs.px;
+        rhs.px = tmp;
+    }
+
+private:
+
+    T * px;
+};
+
 template<typename T, typename MultiIndex>
 struct multi_index_item: public T {
     template<typename Constructor>
@@ -80,7 +189,7 @@ inline void intrusive_ptr_release(eosio::multi_index_item<T, MultiIndex>* obj) {
 
 template<index_name_t IndexName, typename Extractor>
 struct indexed_by {
-    enum constants { index_name = IndexName };
+    enum constants { index_name = static_cast<uint64_t>(IndexName) };
     typedef Extractor extractor_type;
 };
 
@@ -129,7 +238,7 @@ void safe_allocate(const Size size, const char* error_msg, Lambda&& callback) {
     callback(alloc.data, alloc.size);
 }
 
-template<table_name_t TableName, typename T, typename... Indices>
+template<eosio::name::raw TableName, typename T, typename... Indices>
 class multi_index {
 private:
     static_assert(sizeof...(Indices) <= 16, "multi_index only supports a maximum of 16 secondary indices");
@@ -137,7 +246,7 @@ private:
     constexpr static bool validate_table_name(table_name_t n) {
         // Limit table names to 12 characters so that
         // the last character (4 bits) can be used to distinguish between the secondary indices.
-        return (n & 0x000000000000000FULL) == 0;
+        return (static_cast<uint64_t>(n) & 0x000000000000000FULL) == 0;
     }
 
     static_assert(
@@ -145,13 +254,13 @@ private:
         "multi_index does not support table names with a length greater than 12");
 
     using item = multi_index_item<T, multi_index>;
-    using item_ptr = boost::intrusive_ptr<item>;
+    using item_ptr = intrusive_ptr<item>;
     using primary_key_extractor_type = primary_key_extractor;
 
     template<index_name_t IndexName, typename Extractor> struct index;
 
     const account_name_t code_;
-    const account_name_t scope_;
+    const scope_t scope_;
 
     mutable primary_key_t next_primary_key_ = end_primary_key;
     mutable std::vector<item_ptr> items_vector_;
@@ -169,7 +278,7 @@ private:
         constexpr static table_name_t table_name() { return TableName; }
         constexpr static index_name_t index_name() { return IndexName; }
         account_name_t get_code() const            { return multidx_->get_code(); }
-        account_name_t get_scope() const           { return multidx_->get_scope(); }
+        scope_t        get_scope() const           { return multidx_->get_scope(); }
 
         const T& operator*() const {
             load_object();
@@ -289,7 +398,7 @@ private:
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         constexpr static bool validate_index_name(index_name_t n) {
-           return n != 0;
+           return static_cast<uint64_t>(n) != 0;
         }
 
         static_assert(validate_index_name(IndexName), "invalid index name used in multi_index");
@@ -297,7 +406,7 @@ private:
         constexpr static table_name_t table_name() { return TableName; }
         constexpr static index_name_t index_name() { return IndexName; }
         account_name_t get_code() const            { return multidx_->get_code(); }
-        account_name_t get_scope() const           { return multidx_->get_scope(); }
+        scope_t        get_scope() const           { return multidx_->get_scope(); }
 
         const_iterator cbegin() const {
             auto cursor = chaindb_lower_bound(get_code(), get_scope(), table_name(), index_name(), nullptr, 0);
@@ -414,7 +523,7 @@ private:
 
     indices_type indices_;
 
-    index<N(primary), primary_key_extractor> primary_idx_;
+    index<"primary"_n, primary_key_extractor> primary_idx_;
 
     item_ptr find_object_in_cache(const primary_key_t pk) const {
         auto itr = std::find_if(items_vector_.rbegin(), items_vector_.rend(), [&pk](const auto& itm) {
@@ -461,17 +570,17 @@ private:
         return ptr;
     }
 public:
-    using const_iterator = const_iterator_impl<N(primary)>;
+    using const_iterator = const_iterator_impl<"primary"_n>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
-    multi_index(const account_name_t code, account_name_t scope)
+    multi_index(const account_name_t code, scope_t scope)
     : code_(code), scope_(scope), primary_idx_(this) {}
 
     constexpr static table_name_t table_name() { return TableName; }
 
     account_name_t get_code() const  { return code_; }
-    account_name_t get_scope() const { return scope_; }
+    scope_t get_scope() const { return scope_; }
 
     const_iterator cbegin() const { return primary_idx_.cbegin(); }
     const_iterator begin() const  { return cbegin(); }
@@ -507,7 +616,7 @@ public:
 
         auto res = hana::find_if(indices_, [](auto&& in) {
             return std::integral_constant<
-                bool, std::decay<decltype(in)>::type::index_name == IndexName>();
+                bool, std::decay<decltype(in)>::type::index_name == static_cast<uint64_t>(IndexName)>();
         });
 
         static_assert(res != hana::nothing, "name provided is not the name of any secondary index within multi_index");
@@ -522,7 +631,7 @@ public:
     template<typename Lambda>
     const_iterator emplace(const account_name_t payer, Lambda&& constructor) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
-        chaindb_assert(get_code() == current_receiver(), "cannot modify objects in table of another contract");
+        chaindb_assert(static_cast<uint64_t>(get_code()) == current_receiver(), "cannot modify objects in table of another contract");
 
         auto ptr = item_ptr(new item(this, [&](auto& itm) {
             constructor(static_cast<T&>(itm));
@@ -555,7 +664,7 @@ public:
     template<typename Lambda>
     void modify(const T& obj, const account_name_t payer, Lambda&& updater) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
-        chaindb_assert(get_code() == current_receiver(), "cannot modify objects in table of another contract");
+        chaindb_assert(static_cast<uint64_t>(get_code()) == current_receiver(), "cannot modify objects in table of another contract");
 
         const auto& itm = static_cast<const item&>(obj);
         chaindb_assert(itm.multidx_ == this, "object passed to modify is not in multi_index");
