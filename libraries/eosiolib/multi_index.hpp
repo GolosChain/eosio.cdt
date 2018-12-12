@@ -52,13 +52,57 @@ struct const_mem_fun
   }
 };
 
+template<typename A>
+struct get_result_type {
+    using type = typename A::result_type;
+}; // struct get_result_type
+
+template<typename Value, typename... Fields>
+struct composite_key {
+    using result_type = bool;
+    using key_type = std::tuple<typename get_result_type<Fields>::type...>;
+
+    auto operator()(const Value& v) {
+        return std::make_tuple(Fields()(v)...);
+    }
+}; // struct composite_key
+
+namespace detail {
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct member_base {
+    typedef Type result_type;
+
+    template<typename ChainedPtr>
+    auto operator()(const ChainedPtr& x) const
+    -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::type, Type&> {
+        return operator()(*x);
+    }
+
+    Type& operator()(const Class& x) const {
+        return x.*PtrToMember;
+    }
+    Type& operator()(const std::reference_wrapper<const Class>& x) const {
+        return operator()(x.get());
+    }
+    Type& operator()(const std::reference_wrapper<Class>& x) const {
+        return operator()(x.get());
+    }
+}; // struct member_base
+}
+
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct member:
+    detail::member_base<Class,Type,PtrToMember>
+{
+};
+
 //
 //  intrusive_ptr
 //
 //  A smart pointer that uses intrusive reference counting.
 //
 //  Relies on unqualified calls to
-//  
+//
 //      void intrusive_ptr_add_ref(T * p);
 //      void intrusive_ptr_release(T * p);
 //
@@ -162,6 +206,93 @@ private:
 
     T * px;
 };
+
+
+
+namespace _detail {
+    template <typename T> constexpr T& min(T& a, T& b) {
+        return a > b ? b : a;
+    }
+
+    template<int I, int Max> struct comparator_helper {
+        template<typename L, typename V>
+        bool operator()(const L& left, const V& value) const {
+            return std::get<I>(left) == std::get<I>(value) &&
+                comparator_helper<I + 1, Max>()(left, value);
+        }
+    }; // struct comparator_helper
+
+    template<int I> struct comparator_helper<I, I> {
+        template<typename... L> bool operator()(L&&...) const { return true; }
+    }; // struct comparator_helper
+
+    template<int I, int Max> struct converter_helper {
+        template<typename L, typename V> void operator()(L& left, const V& value) const {
+            std::get<I>(left) = std::get<I>(value);
+            converter_helper<I + 1, Max>()(left, value);
+        }
+    }; // struct converter_helper
+
+    template<int I> struct converter_helper<I, I> {
+        template<typename... L> void operator()(L&&...) const { }
+    }; // struct converter_helper
+} // namespace _detail
+
+template<typename Key>
+struct key_comparator {
+    static bool compare_eq(const Key& left, const Key& right) {
+        return left == right;
+    }
+}; // struct key_comparator
+
+template<typename... Indices>
+struct key_comparator<std::tuple<Indices...>> {
+    using key_type = std::tuple<Indices...>;
+
+    template<typename Value>
+    static bool compare_eq(const key_type& left, const Value& value) {
+        return std::get<0>(left) == value;
+    }
+
+    template<typename... Values>
+    static bool compare_eq(const key_type& left, const std::tuple<Values...>& value) {
+        using value_type = std::tuple<Values...>;
+        using namespace _detail;
+
+        return comparator_helper<0, min(std::tuple_size<value_type>::value, std::tuple_size<key_type>::value)>()(left, value);
+    }
+}; // struct key_comparator
+
+template<typename Key>
+struct key_converter {
+    static Key convert(const Key& key) {
+        return key;
+    }
+}; // struct key_converter
+
+template<typename... Indices>
+struct key_converter<std::tuple<Indices...>> {
+    using key_type = std::tuple<Indices...>;
+
+    template<typename Value>
+    static key_type convert(const Value& value) {
+        key_type index;
+        std::get<0>(index) = value;
+        return index;
+    }
+
+    template<typename... Values>
+    static key_type convert(const std::tuple<Values...>& value) {
+        using namespace _detail;
+        using value_type = std::tuple<Values...>;
+
+        key_type index;
+        converter_helper<0, min(std::tuple_size<value_type>::value, std::tuple_size<key_type>::value)>()(index, value);
+        return index;
+    }
+}; // struct key_converter
+
+
 
 template<typename T, typename MultiIndex>
 struct multi_index_item: public T {
@@ -393,7 +524,7 @@ private:
     struct index {
     public:
         using extractor_type = Extractor;
-        using key_type = typename std::decay<decltype(Extractor()(nullptr))>::type;
+        using key_type = typename std::decay<decltype(Extractor()(static_cast<const T&>(*(const T*)nullptr)))>::type;
         using const_iterator = const_iterator_impl<IndexName>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -427,6 +558,15 @@ private:
 
         const_iterator find(key_type&& key) const {
            return find(key);
+        }
+        template<typename Value>
+        const_iterator find(const Value& value) const {
+            auto key = key_converter<key_type>::convert(value);
+            auto itr = lower_bound(key);
+            auto etr = cend();
+            if (itr == etr) return etr;
+            if (!key_comparator<key_type>::compare_eq(extractor_type()(*itr), value)) return etr;
+            return itr;
         }
         const_iterator find(const key_type& key) const {
            auto itr = lower_bound(key);
@@ -465,6 +605,10 @@ private:
                 cursor = chaindb_lower_bound(get_code(), get_scope(), table_name(), index_name(), data, size);
             });
             return const_iterator(multidx_, cursor);
+        }
+        template<typename Value>
+        const_iterator lower_bound(const Value& value) const {
+            return lower_bound(key_converter<key_type>::convert(value));
         }
 
         const_iterator upper_bound(key_type&& key) const {
