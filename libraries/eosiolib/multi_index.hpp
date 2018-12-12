@@ -67,9 +67,9 @@ struct composite_key {
     }
 }; // struct composite_key
 
-namespace detail {
+namespace _detail {
 template<class Class,typename Type,Type Class::*PtrToMember>
-struct member_base {
+struct const_member_base {
     typedef Type result_type;
 
     template<typename ChainedPtr>
@@ -87,12 +87,39 @@ struct member_base {
     Type& operator()(const std::reference_wrapper<Class>& x) const {
         return operator()(x.get());
     }
-}; // struct member_base
+}; // struct const_member_base
+
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct non_const_member_base {
+    typedef Type result_type;
+
+    template<typename ChainedPtr>
+    auto operator()(const ChainedPtr& x) const
+    -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::type, Type&> {
+        return operator()(*x);
+    }
+
+    const Type& operator()(const Class& x) const {
+        return x.*PtrToMember;
+    }
+    Type& operator()(Class& x) const {
+        return x.*PtrToMember;
+    }
+    const Type& operator()(const std::reference_wrapper<const Class>& x) const {
+        return operator()(x.get());
+    }
+    Type& operator()(const std::reference_wrapper<Class>& x) const {
+        return operator()(x.get());
+    }
+}; // struct non_const_member_base
 }
 
 template<class Class,typename Type,Type Class::*PtrToMember>
-struct member:
-    detail::member_base<Class,Type,PtrToMember>
+struct member: std::conditional<
+    std::is_const<Type>::value,
+    _detail::const_member_base<Class,Type,PtrToMember>,
+    _detail::non_const_member_base<Class,Type,PtrToMember>
+  >::type
 {
 };
 
