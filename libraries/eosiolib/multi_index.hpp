@@ -427,6 +427,8 @@ private:
     struct const_iterator_impl: public std::iterator<std::bidirectional_iterator_tag, const T> {
     public:
         friend bool operator == (const const_iterator_impl& a, const const_iterator_impl& b) {
+            a.lazy_open();
+            b.lazy_open();
             return a.primary_key_ == b.primary_key_;
         }
         friend bool operator != (const const_iterator_impl& a, const const_iterator_impl& b) {
@@ -439,13 +441,11 @@ private:
         scope_t        get_scope() const           { return multidx_->get_scope(); }
 
         const T& operator*() const {
-            load_object();
-            //return *static_cast<const T*>(item_.get());
+            lazy_load_object();
             return *static_cast<const T*>(item_.get());
         }
         const T* operator->() const {
-            load_object();
-            // return static_cast<const T*>(item_.get());
+            lazy_load_object();
             return static_cast<const T*>(item_.get());
         }
 
@@ -455,6 +455,7 @@ private:
             return result;
         }
         const_iterator_impl& operator++() {
+            lazy_open();
             chaindb_assert(primary_key_ != end_primary_key, "cannot increment end iterator");
             primary_key_ = chaindb_next(get_code(), cursor_);
             item_.reset();
@@ -467,7 +468,7 @@ private:
             return result;
         }
         const_iterator_impl& operator--() {
-            lazy_load_end_cursor();
+            lazy_open();
             primary_key_ = chaindb_prev(get_code(), cursor_);
             item_.reset();
             chaindb_assert(primary_key_ != end_primary_key, "out of range on decrement of iterator");
@@ -487,7 +488,7 @@ private:
             primary_key_ = src.primary_key_;
             item_ = src.item_;
 
-            src.cursor_ = invalid_cursor;
+            src.cursor_ = uninitialized_state;
             src.primary_key_ = end_primary_key;
             src.item_.reset();
 
@@ -501,7 +502,13 @@ private:
             if (this == &src) return *this;
 
             multidx_ = src.multidx_;
-            cursor_ = chaindb_clone(get_code(), src.cursor_);
+
+            if (src.is_cursor_initialized()) {
+                cursor_ = chaindb_clone(get_code(), src.cursor_);
+            } else {
+                cursor_ = src.cursor_;
+            }
+
             primary_key_ = src.primary_key_;
             item_ = src.item_;
 
@@ -509,42 +516,80 @@ private:
         }
 
         ~const_iterator_impl() {
-            if (cursor_ != invalid_cursor) chaindb_close(get_code(), cursor_);
+            if (is_cursor_initialized()) chaindb_close(get_code(), cursor_);
         }
 
     private:
         friend multi_index;
         template<index_name_t, typename> struct index;
 
-        const_iterator_impl(const multi_index* midx)
-        : multidx_(midx) { }
-
         const_iterator_impl(const multi_index* midx, const cursor_t cursor)
         : multidx_(midx), cursor_(cursor) {
-            if (cursor_ != invalid_cursor) primary_key_ = chaindb_current(get_code(), cursor);
         }
 
         const_iterator_impl(const multi_index* midx, const cursor_t cursor, const primary_key_t pk, item_ptr item)
         : multidx_(midx), cursor_(cursor), primary_key_(pk), item_(item) { }
 
         const multi_index* multidx_ = nullptr;
-        mutable cursor_t cursor_ = invalid_cursor;
+        mutable cursor_t cursor_ = uninitialized_state;
         mutable primary_key_t primary_key_ = end_primary_key;
         mutable item_ptr item_;
 
-        void load_object() const {
+        void lazy_load_object() const {
             if (item_ && !item_->deleted_) return;
 
+            lazy_open();
             chaindb_assert(primary_key_ != end_primary_key, "cannot load object from end iterator");
             item_ = multidx_->load_object(cursor_, primary_key_);
         }
 
-        void lazy_load_end_cursor() {
-            if (primary_key_ != end_primary_key || cursor_ != invalid_cursor) return;
+        void lazy_open() const {
+            if (BOOST_LIKELY(is_cursor_initialized())) return;
 
-            cursor_ = chaindb_end(get_code(), get_scope(), table_name(), index_name());
-            chaindb_assert(cursor_ != invalid_cursor, "unable to open end iterator");
+            switch (cursor_) {
+                case uninitialized_begin:
+                    lazy_open_begin();
+                    break;
+
+                case uninitialized_end:
+                    lazy_open_end();
+                    break;
+
+                case uninitialized_find_by_pk:
+                    lazy_open_find_by_pk();
+                    break;
+
+                default:
+                    break;
+            }
+            chaindb_assert(is_cursor_initialized(), "unable to open cursor");
         }
+
+        bool is_cursor_initialized() const {
+            return cursor_ > uninitialized_state;
+        }
+
+        void lazy_open_begin() const {
+            cursor_ = chaindb_lower_bound(get_code(), get_scope(), table_name(), index_name(), nullptr, 0);
+            chaindb_assert(is_cursor_initialized(), "unable to open begin iterator");
+            primary_key_ = chaindb_current(get_code(), cursor_);
+        }
+
+        void lazy_open_end() const {
+            cursor_ = chaindb_end(get_code(), get_scope(), table_name(), index_name());
+            chaindb_assert(is_cursor_initialized(), "unable to open end iterator");
+        }
+
+        void lazy_open_find_by_pk() const {
+            cursor_ = chaindb_find(get_code(), get_scope(), table_name(), index_name(), primary_key_, nullptr, 0);
+            chaindb_assert(is_cursor_initialized(), "unable to open find_by_pk iterator");
+        }
+
+    private:
+        static constexpr cursor_t uninitialized_state = 0;
+        static constexpr cursor_t uninitialized_end = -1;
+        static constexpr cursor_t uninitialized_begin = -2;
+        static constexpr cursor_t uninitialized_find_by_pk = -3;
     }; /// struct multi_index::const_iterator_impl
 
     template<index_name_t IndexName, typename Extractor>
@@ -567,13 +612,12 @@ private:
         scope_t        get_scope() const           { return multidx_->get_scope(); }
 
         const_iterator cbegin() const {
-            auto cursor = chaindb_lower_bound(get_code(), get_scope(), table_name(), index_name(), nullptr, 0);
-            return {multidx_, cursor};
+            return {multidx_, const_iterator::uninitialized_begin};
         }
         const_iterator begin() const  { return cbegin(); }
 
         const_iterator cend() const {
-            return {multidx_};
+            return {multidx_, const_iterator::uninitialized_end};
         }
         const_iterator end() const  { return cend(); }
 
@@ -812,18 +856,15 @@ public:
         auto pk = primary_key_extractor_type()(obj);
         chaindb_assert(pk != end_primary_key, "invalid value of primary key");
 
-        cursor_t cursor;
         safe_allocate(pack_size(obj), "invalid size of object", [&](auto& data, auto& size) {
             pack_object(obj, data, size);
-            cursor = chaindb_insert(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            chaindb_insert(get_code(), get_scope(), table_name(), payer, pk, data, size);
         });
-
-        chaindb_assert(cursor != invalid_cursor, "unable to create object");
 
         add_object_to_cache(ptr);
 
         next_primary_key_ = pk + 1;
-        return const_iterator(this, cursor, pk, std::move(ptr));
+        return const_iterator(this, const_iterator::uninitialized_find_by_pk, pk, std::move(ptr));
     }
 
     template<typename Lambda>
