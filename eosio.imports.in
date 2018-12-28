@@ -82,6 +82,11 @@ require_auth
 require_auth2
 has_auth
 is_account
+is_domain
+is_username
+get_domain_owner
+resolve_domain
+resolve_username
 prints
 prints_l
 printi
