@@ -525,6 +525,8 @@ private:
 
         const_iterator_impl(const multi_index* midx, const cursor_t cursor)
         : multidx_(midx), cursor_(cursor) {
+            if (is_cursor_initialized())
+                primary_key_ = chaindb_current(get_code(), cursor_);
         }
 
         const_iterator_impl(const multi_index* midx, const cursor_t cursor, const primary_key_t pk, item_ptr item)
