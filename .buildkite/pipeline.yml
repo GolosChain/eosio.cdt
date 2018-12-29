@@ -1,0 +1,15 @@
+steps:
+
+  - label: ":docker: build docker image"
+    command: ".buildkite/steps/build-image.sh"
+
+  - wait
+
+  - label: ":floppy_disk: upload image"
+    command: ".buildkite/steps/publish-image.sh"
+    branches: "master develop ci-*"
+
+  - wait
+
+  - label: ":slack:"
+    command: ".buildkite/steps/slack.sh \"Pipeline complete successfully: ${BUILDKITE_MESSAGE}\" \"good\""
