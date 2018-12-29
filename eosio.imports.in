@@ -171,6 +171,7 @@ _eosio_i32_to_f64
 _eosio_i64_to_f64
 _eosio_ui32_to_f64
 _eosio_ui64_to_f64
+chaindb_opt_find_by_pk
 chaindb_lower_bound
 chaindb_upper_bound
 chaindb_find
