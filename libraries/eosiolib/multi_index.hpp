@@ -525,8 +525,9 @@ private:
 
         const_iterator_impl(const multi_index* midx, const cursor_t cursor)
         : multidx_(midx), cursor_(cursor) {
-            if (is_cursor_initialized())
+            if (is_cursor_initialized()) {
                 primary_key_ = chaindb_current(get_code(), cursor_);
+            }
         }
 
         const_iterator_impl(const multi_index* midx, const cursor_t cursor, const primary_key_t pk, item_ptr item)
@@ -583,7 +584,7 @@ private:
         }
 
         void lazy_open_find_by_pk() const {
-            cursor_ = chaindb_find(get_code(), get_scope(), table_name(), index_name(), primary_key_, nullptr, 0);
+            cursor_ = chaindb_opt_find_by_pk(get_code(), get_scope(), table_name(), primary_key_);
             chaindb_assert(is_cursor_initialized(), "unable to open find_by_pk iterator");
         }
 
