@@ -1,4 +1,6 @@
-FROM cyberway/builder:latest as builder
+ARG buildtype=stable
+
+FROM cyberway/builder:$buildtype as builder
 ARG branch=master
 
 ADD https://api.github.com/repos/GolosChain/cyberway.cdt/git/refs/heads/$branch /etc/version.json
