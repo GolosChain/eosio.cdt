@@ -187,3 +187,4 @@ chaindb_available_primary_key
 chaindb_insert
 chaindb_update
 chaindb_delete
+send_event
