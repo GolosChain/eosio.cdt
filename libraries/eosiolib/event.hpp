@@ -69,21 +69,7 @@ namespace eosio {
       event( struct name a, struct name n, T&& value )
       :account(a), name(n), data(pack(std::forward<T>(value))) {}
 
-      /**
-       * Construct a new event object with the given event struct
-       *
-       * @brief Construct a new event object with the given list of permissions, event receiver, event name, event struct
-       * @tparam T  - Type of event struct, must be serializable by `pack(...)`
-       * @param auths - The list of permissions that authorize this event
-       * @param a -  The name of the account this event is intended for (event receiver)
-       * @param n - The name of the event
-       * @param value - The event struct that will be serialized via pack into data
-       */
-      template<typename T>
-      event( std::vector<permission_level> auths, struct name a, struct name n, T&& value )
-      :account(a), name(n), authorization(std::move(auths)), data(pack(std::forward<T>(value))) {}
-
-      EOSLIB_SERIALIZE( event, (account)(name)(authorization)(data) )
+      EOSLIB_SERIALIZE( event, (account)(name)(data) )
 
       /**
        * Send the event as inline event
@@ -111,3 +97,4 @@ namespace eosio {
 
    ///@} eventcpp api
    ///@}
+}
