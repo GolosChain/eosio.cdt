@@ -72,11 +72,11 @@ if [[ `uname` == 'Darwin' ]]; then
    read -ra FREE_MEM <<< "$FREE_MEM"
    FREE_MEM=$((${FREE_MEM[2]%?}*(4096))) # free pages * page size
 else
-   FREE_MEM=`LC_ALL=C free | grep "Mem:" | awk '{print $4}'`
+   FREE_MEM=`LC_ALL=C free | grep "Mem:" | awk '{print $7}'`
 fi
 
 CORES_AVAIL=`getconf _NPROCESSORS_ONLN`
-MEM_CORES=$(( ${FREE_MEM}/4000000 )) # 4 gigabytes per core
+MEM_CORES=$(( ${FREE_MEM}/2000000 )) # 2 gigabytes per core
 MEM_CORES=$(( $MEM_CORES > 0 ? $MEM_CORES : 1 ))
 CORES=$(( $CORES_AVAIL < $MEM_CORES ? $CORES_AVAIL : $MEM_CORES ))
 
