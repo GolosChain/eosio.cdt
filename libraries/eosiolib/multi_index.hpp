@@ -1,5 +1,12 @@
 #pragma once
 
+#include "action.h"
+#include "name.hpp"
+#include "serialize.hpp"
+#include "datastream.hpp"
+#include "chaindb.h"
+#include "fixed_key.hpp"
+
 #include <vector>
 #include <tuple>
 #include <boost/hana.hpp>
@@ -10,13 +17,6 @@
 #include <limits>
 #include <algorithm>
 #include <memory>
-
-#include <eosiolib/action.h>
-#include <eosiolib/name.hpp>
-#include <eosiolib/serialize.hpp>
-#include <eosiolib/datastream.hpp>
-#include <eosiolib/chaindb.h>
-#include <eosiolib/fixed_key.hpp>
 
 #define chaindb_assert(_EXPR, ...) eosio_assert(_EXPR, __VA_ARGS__)
 
