@@ -20,6 +20,12 @@
 
 #define chaindb_assert(_EXPR, ...) eosio_assert(_EXPR, __VA_ARGS__)
 
+#ifndef CHAINDB_ANOTHER_CONTRACT_PROTECT
+#  define CHAINDB_ANOTHER_CONTRACT_PROTECT(_CHECK, _MSG) \
+     chaindb_assert(_CHECK, _MSG)
+#endif // CHAINDB_ANOTHER_CONTRACT_PROTECT
+
+
 namespace eosio {
 
 constexpr static inline name same_payer{};
@@ -849,7 +855,9 @@ public:
     template<typename Lambda>
     const_iterator emplace(const account_name_t payer, Lambda&& constructor) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
-        chaindb_assert(static_cast<uint64_t>(get_code()) == current_receiver(), "cannot modify objects in table of another contract");
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            static_cast<uint64_t>(get_code()) == current_receiver(),
+            "cannot create objects in table of another contract");
 
         auto ptr = item_ptr(new item(this, [&](auto& itm) {
             constructor(static_cast<T&>(itm));
@@ -879,7 +887,9 @@ public:
     template<typename Lambda>
     void modify(const T& obj, const account_name_t payer, Lambda&& updater) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
-        chaindb_assert(static_cast<uint64_t>(get_code()) == current_receiver(), "cannot modify objects in table of another contract");
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            static_cast<uint64_t>(get_code()) == current_receiver(),
+            "cannot modify objects in table of another contract");
 
         const auto& itm = static_cast<const item&>(obj);
         chaindb_assert(itm.multidx_ == this, "object passed to modify is not in multi_index");
@@ -924,6 +934,11 @@ public:
 
     void erase(const T& obj) const {
         const auto& itm = static_cast<const item&>(obj);
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            static_cast<uint64_t>(get_code()) == current_receiver(),
+            "cannot delete objects from table of another contract");
+
         chaindb_assert(itm.multidx_ == this, "object passed to erase is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
