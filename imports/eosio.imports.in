@@ -186,3 +186,8 @@ chaindb_insert
 chaindb_update
 chaindb_delete
 send_event
+get_bw_cpu_limit
+get_bw_net_limit
+is_provided_bw_confirmed
+set_bw_limits
+confirm_bw_limits
