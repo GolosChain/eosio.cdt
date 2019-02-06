@@ -33,6 +33,5 @@ EOSIO_DISPATCH( test, (testact) )
 
 ### CMake Macros
 - `add_contract` is used to build your smart contract and generate an ABI, the first parameter is the contract name, the second is the cmake target name, and the rest are the CPP files needed to build the contract.
-- `target_ricardian_directory` can be used to add the directory where your ricardian contracts live to a specific cmake target.
 - (new for native tester) `add_native_library` and `add_native_executable` CMake macros have been added (these are a drop in replacement for add_library and add_executable).
 

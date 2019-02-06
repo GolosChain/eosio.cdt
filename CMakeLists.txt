@@ -67,9 +67,6 @@ include(modules/InstallCDT.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/imports/eosio.imports.in ${CMAKE_BINARY_DIR}/eosio.imports COPYONLY)
 install(FILES ${CMAKE_BINARY_DIR}/eosio.imports DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-configure_file(${CMAKE_SOURCE_DIR}/scripts/ricardeos/ricardeos.py ${CMAKE_BINARY_DIR}/scripts/ricardeos.py COPYONLY)
-install(FILES ${CMAKE_BINARY_DIR}/scripts/ricardeos.py DESTINATION ${CMAKE_INSTALL_PREFIX}/scripts)
-
 # section for package construction
 set(VENDOR "block.one")
 set(PROJECT_NAME "eosio.cdt")

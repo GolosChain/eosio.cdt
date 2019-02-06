@@ -152,8 +152,6 @@ class abidiff {
                if (abi1["actions"].at(i)["name"] == abi2["actions"].at(j)["name"]) {
                   if (abi1["actions"].at(i)["type"] != abi2["actions"].at(j)["type"])
                      break;
-                  if (abi1["actions"].at(i)["ricardian_contract"] != abi2["actions"].at(j)["ricardian_contract"])
-                     break;
                   found = true;
                }
             }
@@ -179,26 +177,6 @@ class abidiff {
             }
             if (!found)
                print_table(abi1, i, direction);
-         }
-      }
-
-      void print_clause(const ojson& abi, int index, char direction) {
-         std::cout << direction << " clause\n";
-         std::cout << pretty_print(abi["clauses"].at(index)) << "\n";
-      }
-
-      void find_clauses(const ojson& abi1, const ojson& abi2, char direction) {
-         for ( int i=0; i < abi1["ricardian_clauses"].size(); i++ ) {
-            bool found = false;
-            for ( int j=0; j < abi2["ricardian_clauses"].size(); j++ ) {
-               if (abi1["ricardian_clauses"].at(i)["id"] == abi2["ricardian_clauses"].at(j)["id"]) {
-                  if (abi1["ricardian_clauses"].at(i)["body"] != abi2["ricardian_clauses"].at(j)["body"])
-                     break;
-                  found = true;
-               }
-            }
-            if (!found)
-               print_clause(abi1, i, direction);
          }
       }
 
@@ -244,11 +222,6 @@ class abidiff {
          find_tables(abi_2, abi_1, '>');
       }
 
-      void diff_clauses() {
-         find_clauses(abi_1, abi_2, '<');
-         find_clauses(abi_2, abi_1, '>');
-      }
-
       void diff_variants() {
          find_variants(abi_1, abi_2, '<');
          find_variants(abi_2, abi_1, '>');
@@ -260,7 +233,6 @@ class abidiff {
          diff_types();
          diff_actions();
          diff_tables();
-         diff_clauses();
          if ( get_version(abi_1) >= 11 && get_version(abi_2) >= 11 )
             diff_variants();
       }
