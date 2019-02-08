@@ -69,11 +69,6 @@ class abigen : public generation_utils {
       abi_action ret;
       auto action_name = decl->getEosioActionAttr()->getName();
 
-      if (rcs[get_action_name(decl)].empty())
-         std::cout << "Warning, action <"+get_action_name(decl)+"> does not have a ricardian contract\n";
-
-      ret.ricardian_contract = rcs[get_action_name(decl)];
-
       if (action_name.empty()) {
          try {
             validate_name( decl->getName().str(), error_handler );
@@ -100,11 +95,6 @@ class abigen : public generation_utils {
       abi_action ret;
 
       auto action_name = decl->getEosioActionAttr()->getName();
-
-      if (rcs[get_action_name(decl)].empty())
-         std::cout << "Warning, action <"+get_action_name(decl)+"> does not have a ricardian contract\n";
-
-      ret.ricardian_contract = rcs[get_action_name(decl)];
 
       if (action_name.empty()) {
          try {
@@ -243,16 +233,6 @@ class abigen : public generation_utils {
       t.name = name_to_string(name);
       _abi.tables.insert(t);
    }
-   
-   void add_clauses( const std::vector<std::pair<std::string, std::string>>& clauses ) {
-      for ( auto clp : clauses ) {
-         _abi.ricardian_clauses.push_back({std::get<0>(clp), std::get<1>(clp)});
-      }
-   }
-   
-   void add_contracts( const std::map<std::string, std::string>& rc ) {
-      rcs = rc;
-   }
 
    void add_variant( const clang::QualType& t ) {
       abi_variant var;
@@ -333,14 +313,6 @@ class abigen : public generation_utils {
       ojson o;
       o["name"] = a.name;
       o["type"] = a.type;
-      o["ricardian_contract"] = a.ricardian_contract;
-      return o;
-   }
-
-   ojson clause_to_json( const abi_ricardian_clause_pair& clause ) {
-      ojson o;
-      o["id"] = clause.id;
-      o["body"] = clause.body;
       return o;
    }
 
@@ -445,10 +417,6 @@ class abigen : public generation_utils {
       for ( auto t : set_of_tables ) {
          o["tables"].push_back(table_to_json( t ));
       }
-      o["ricardian_clauses"]  = ojson::array();
-      for ( auto rc : _abi.ricardian_clauses ) {
-         o["ricardian_clauses"].push_back(clause_to_json( rc ));
-      }
       o["variants"]   = ojson::array();
       for ( auto v : _abi.variants ) {
          o["variants"].push_back(variant_to_json( v ));
@@ -491,14 +459,8 @@ class EosioMethodMatcher : public MatchFinder::MatchCallback {
 
 class EosioRecordMatcher : public MatchFinder::MatchCallback {
    public:
-      bool has_added_clauses = false;
       virtual void run( const MatchFinder::MatchResult& res ) {
          if (const clang::CXXRecordDecl* decl = res.Nodes.getNodeAs<clang::CXXRecordDecl>("eosio_abis")) {
-            if (!has_added_clauses) {
-               get_abigen_ref().add_clauses(get_abigen_ref().parse_clauses());
-               get_abigen_ref().add_contracts(get_abigen_ref().parse_contracts());
-               has_added_clauses = true;
-            }
             if (decl->isEosioAction() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
                get_abigen_ref().add_struct(decl);
                get_abigen_ref().add_action(decl);

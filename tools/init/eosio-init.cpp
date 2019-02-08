@@ -41,7 +41,6 @@ struct project {
       if (!bare) {
          llvm::sys::fs::create_directory(path+"/src");
          llvm::sys::fs::create_directory(path+"/include");
-         llvm::sys::fs::create_directory(path+"/ricardian");
          llvm::sys::fs::create_directory(path+"/build");
       }
    }
@@ -63,15 +62,12 @@ struct project {
                            "      using hi_action = action_wrapper<\"hi\"_n, &@::hi>;\n"
                            "};";
    
-   const std::string ricardian = "<h1 class=\"contract\"> hi </h1>\n\n"
-                                 "Stub for hi action's ricardian contract";
-
    const std::string cmake = "project(@)\n\n"
                              "set(EOSIO_WASM_OLD_BEHAVIOR \"Off\")\n"
                              "find_package(eosio.cdt)\n\n"
                              "add_contract( @ @ @.cpp )\n"
                              "target_include_directories( @ PUBLIC ${CMAKE_SOURCE_DIR}/../include )\n"
-                             "target_ricardian_directory( @ ${CMAKE_SOURCE_DIR}/../ricardian )";
+                             ;
 
    const std::string cmake_extern = "include(ExternalProject)\n"
                                     "# if no cdt root is given use default path\n"
@@ -164,14 +160,6 @@ struct project {
          cmake_out << replace_name(replace_cdt_root(cmake_extern));
       }
    }
-   void write_ricardian() {
-      std::ofstream rc_out;
-      if (bare)
-         rc_out.open(path+"/"+project_name+".contracts.md");
-      else
-         rc_out.open(path+"/ricardian/"+project_name+".contracts.md");
-      rc_out << ricardian;
-   }
    void write_readme() {
       std::ofstream readme_out(path+"/README.txt");
       if (bare) {
@@ -223,7 +211,6 @@ int main(int argc, const char **argv) {
       proj.write_cpp();
       proj.write_cmake();
       proj.write_cmake_extern();
-      proj.write_ricardian();
       proj.write_readme();
    } catch ( std::exception& e ) {
       std::cout << e.what() << "\n";

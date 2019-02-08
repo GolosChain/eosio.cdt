@@ -16,90 +16,6 @@
 
 namespace eosio { namespace cdt {
 
-struct simple_ricardian_tokenizer {
-   simple_ricardian_tokenizer( const std::string& src ) : source(src), index(0) {}
-   int eat_ws(int i) {
-      if (source[i] != ' ' && source[i] != '\n' && source[i] != '\r' && source[i] != '\t')
-         return 0;
-      for (; i < source.size(); i++) {
-         if (source[i] != ' ' && source[i] != '\n' && source[i] != '\r' && source[i] != '\t')
-            break;
-      }
-      return i - index;
-   }
-
-   bool check(const std::string& sub) {
-      int i = index;
-      int j = 0;
-      for (; j < sub.size(); i++, j++) {
-         i += eat_ws(i);
-         if (sub[j] != source[i])
-            return false;
-      }
-      index = i;
-      index += eat_ws(index);
-      return true;
-   }
-
-   bool is_decl(std::string type) {
-      return check("<") && check("h1") && check("class") && check("=")
-            && check('\"'+type+'\"') && check(">");
-   }
-
-   std::vector<std::string> get_decl(std::string type) {
-      if (is_decl(type)) {
-         int before, after;
-         before = after = index;
-         int ws = 0;
-         for (; after < source.size(); after++) {
-            if (source[after] == '<')
-               break;
-            if (source[after] != ' ' && source[after] != '\n' && source[after] != '\r' && source[after] != '\t')
-               ws = 0;
-            else
-               ws++;
-         }
-         index = after;
-         if (check("<") && check("/h1") && check(">"))
-            return {source.substr(before, after-before-ws)};
-      }
-      return {};
-   }
-   std::string get_body(const std::string& type) {
-      int i, before;
-      i = before = index;
-      int ws = 0;
-      for (; i < source.size(); i++) {
-         index = i;
-         if (is_decl(type))
-            break;
-         if (source[i] != ' ' && source[i] != '\n' && source[i] != '\r' && source[i] != '\t')
-            ws = 0;
-         else
-            ws++;
-      }
-      index = i;
-      return source.substr(before, index-before-ws);
-   }
-
-   std::vector<std::pair<std::string, std::string>> parse(const std::string& type) {
-      std::vector<std::pair<std::string, std::string>> ret;
-      while (index < source.size()) {
-         std::vector<std::string> decl = get_decl(type);
-         if (!decl.empty()) {
-            std::string body = get_body(type);
-            ret.push_back(std::make_pair(decl[0], body));
-         }
-         else
-            return {};
-      }
-      return ret;
-   }
-
-   std::string source;
-   size_t      index;
-};
-
 struct generation_utils {
    std::function<void()> error_handler;
    std::vector<std::string> resource_dirs;
@@ -160,20 +76,6 @@ struct generation_utils {
       }
    }
 
-   static inline bool has_eosio_ricardian( const clang::CXXMethodDecl* decl ) {
-      return decl->hasEosioRicardian();
-   }
-   static inline bool has_eosio_ricardian( const clang::CXXRecordDecl* decl ) {
-      return decl->hasEosioRicardian();
-   }
-
-   static inline std::string get_eosio_ricardian( const clang::CXXMethodDecl* decl ) {
-      return decl->getEosioRicardianAttr()->getName();
-   }
-   static inline std::string get_eosio_ricardian( const clang::CXXRecordDecl* decl ) {
-      return decl->getEosioRicardianAttr()->getName();
-   }
-
    static inline std::string get_action_name( const clang::CXXMethodDecl* decl ) {
       std::string action_name = "";
       auto tmp = decl->getEosioActionAttr()->getName();
@@ -187,12 +89,6 @@ struct generation_utils {
       if (!tmp.empty())
          return tmp;
       return decl->getName();
-   }
-   inline std::string get_rc_filename() {
-      return contract_name+".contracts.md";
-   }
-   inline std::string get_clauses_filename() {
-      return contract_name+".clauses.md";
    }
 
    inline std::string read_file( const std::string& fname ) {
@@ -209,45 +105,6 @@ struct generation_utils {
          }
       }
       return {};
-   }
-
-   inline std::string get_ricardian_clauses() {
-      return read_file(get_clauses_filename());
-   }
-   inline std::string get_ricardian_contracts() {
-      return read_file(get_rc_filename());
-   }
-
-   inline std::map<std::string, std::string> parse_contracts() {
-      std::string contracts = get_ricardian_contracts();
-      std::map<std::string, std::string> rcs;
-      simple_ricardian_tokenizer srt(contracts);
-      if (contracts.empty()) {
-         std::cout << "Warning, empty ricardian clause file\n";
-         return rcs;
-      }
-
-      auto parsed = srt.parse("contract");
-      for (auto cl : parsed) {
-         rcs.emplace(std::get<0>(cl), std::get<1>(cl));
-      }
-      return rcs;
-   }
-
-   inline std::vector<std::pair<std::string, std::string>> parse_clauses() {
-      std::string clauses = get_ricardian_clauses();
-      std::vector<std::pair<std::string, std::string>> clause_pairs;
-      simple_ricardian_tokenizer srt(clauses);
-      if (clauses.empty()) {
-         std::cout << "Warning, empty ricardian clause file\n";
-         return clause_pairs;
-      }
-
-      auto parsed = srt.parse("clause");
-      for (auto cl : parsed) {
-         clause_pairs.emplace_back(std::get<0>(cl), std::get<1>(cl));
-      }
-      return clause_pairs;
    }
 
    static inline bool is_eosio_contract( const clang::CXXMethodDecl* decl, const std::string& cn ) {
