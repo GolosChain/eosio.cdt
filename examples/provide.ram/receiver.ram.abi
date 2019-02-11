@@ -1,0 +1,60 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Nov 28 17:15:19 2018",
+    "version": "cyberway::abi/1.0",
+    "structs": [
+        {
+            "name": "sharedval",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "string",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "write",
+            "base": "",
+            "fields": []
+        },
+        {
+            "name": "read",
+            "base": "",
+            "fields": []
+        }
+    ],
+    "types": [],
+    "actions": [
+        {
+            "name": "write",
+            "type": "write",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "read",
+            "type": "read",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "sharedval",
+            "type": "sharedval",
+            "indexes": [
+                {
+                    "name": "primary",
+                    "unique": "true",
+                    "orders": [
+                        {"field": "id", "order": "asc"}
+                    ]
+                }
+            ]
+        }
+        ],
+    "ricardian_clauses": [],
+    "abi_extensions": []
+}
