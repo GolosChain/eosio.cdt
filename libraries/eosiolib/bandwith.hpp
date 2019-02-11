@@ -54,6 +54,13 @@ extern "C" {
    */
    void confirm_bw_limits(eosio::name account);
 
+
+
+   /**
+   *  @brief Confirm to provide bandwith. Bandwith values couldn't be changed after this operation.
+   */
+   eosio::name get_ram_provider(eosio::name user);
+
    ///@ } bandwith c api
 
 }
