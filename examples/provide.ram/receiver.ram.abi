@@ -17,9 +17,24 @@
             ]
         },
         {
-            "name": "write",
+            "name": "writeself",
             "base": "",
-            "fields": []
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "writeuser",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                }
+            ]
         },
         {
             "name": "read",
@@ -30,14 +45,16 @@
     "types": [],
     "actions": [
         {
-            "name": "write",
-            "type": "write",
-            "ricardian_contract": ""
+            "name": "writeself",
+            "type": "writeself"
+        },
+        {
+            "name": "writeuser",
+            "type": "writeuser"
         },
         {
             "name": "read",
-            "type": "read",
-            "ricardian_contract": ""
+            "type": "read"
         }
     ],
     "tables": [
@@ -55,6 +72,5 @@
             ]
         }
         ],
-    "ricardian_clauses": [],
     "abi_extensions": []
 }
