@@ -726,7 +726,7 @@ private:
 
         const_iterator iterator_to(const T& obj) const {
             const auto& itm = static_cast<const item&>(obj);
-            chaindb_assert(itm.multidx_ == multidx_, "object passed to iterator_to is not in multi_index");
+            chaindb_assert(multidx_->is_same_multidx(itm.multidx_), "object passed to iterator_to is not in multi_index");
 
             auto key = extractor_type()(itm);
             auto pk = primary_key_extractor_type()(itm);
@@ -814,6 +814,11 @@ private:
         add_object_to_cache(ptr);
         return ptr;
     }
+
+    bool is_same_multidx(const multi_index* o) const {
+        return (o == this) || (o->get_code() == get_code() && o->get_scope() == get_scope());
+    }
+
 public:
     using const_iterator = const_iterator_impl<"primary"_n>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -921,7 +926,7 @@ public:
             "cannot modify objects in table of another contract");
 
         const auto& itm = static_cast<const item&>(obj);
-        chaindb_assert(itm.multidx_ == this, "object passed to modify is not in multi_index");
+        chaindb_assert(is_same_multidx(itm.multidx_), "object passed to modify is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
 
@@ -968,7 +973,7 @@ public:
             static_cast<uint64_t>(get_code()) == current_receiver(),
             "cannot delete objects from table of another contract");
 
-        chaindb_assert(itm.multidx_ == this, "object passed to erase is not in multi_index");
+        chaindb_assert(is_same_multidx(itm.multidx_), "object passed to erase is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
         remove_object_from_cache(pk);
