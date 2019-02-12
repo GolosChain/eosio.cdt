@@ -852,6 +852,13 @@ public:
         return primary_idx_.iterator_to(obj);
     }
 
+    void flush_cache() {
+        for (auto& itm_ptr: items_vector_) {
+            itm_ptr->deleted_ = true;
+        }
+        items_vector_.clear();
+    }
+
     template<typename Lambda>
     const_iterator emplace(const account_name_t payer, Lambda&& constructor) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
