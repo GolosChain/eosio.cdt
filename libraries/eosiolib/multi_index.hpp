@@ -427,7 +427,28 @@ private:
     const scope_t scope_;
 
     mutable primary_key_t next_primary_key_ = end_primary_key;
-    mutable std::vector<item_ptr> items_vector_;
+
+    using cache_vector_t_ = std::vector<item_ptr>;
+    struct cache_item_t_ {
+        const account_name_t code;
+        const scope_t scope;
+        cache_vector_t_ items_vector;
+
+        cache_item_t_(const account_name_t code, const scope_t scope)
+        : code(code), scope(scope) {
+        }
+    };
+
+    static cache_vector_t_& get_items_vector(const account_name_t code, const scope_t scope) {
+        static std::list<cache_item_t_> cache_map;
+        for (auto& itm: cache_map) {
+            if (itm.code == code && itm.scope == scope) return itm.items_vector;
+        }
+        cache_map.push_back({code, scope});
+        return cache_map.back().items_vector;
+    }
+
+    cache_vector_t_& items_vector_;
 
     template<index_name_t IndexName>
     struct const_iterator_impl: public std::iterator<std::bidirectional_iterator_tag, const T> {
@@ -798,8 +819,9 @@ public:
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
-    multi_index(const account_name_t code, scope_t scope)
-    : code_(code), scope_(scope), primary_idx_(this) {}
+    multi_index(const account_name_t code, const scope_t scope)
+    : code_(code), scope_(scope), primary_idx_(this), items_vector_(get_items_vector(code, scope)) {
+    }
 
     constexpr static table_name_t table_name() { return TableName; }
 
@@ -850,6 +872,13 @@ public:
 
     const_iterator iterator_to(const T& obj) const {
         return primary_idx_.iterator_to(obj);
+    }
+
+    void flush_cache() {
+        for (auto& itm_ptr: items_vector_) {
+            itm_ptr->deleted_ = true;
+        }
+        items_vector_.clear();
     }
 
     template<typename Lambda>
