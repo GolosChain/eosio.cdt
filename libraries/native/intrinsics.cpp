@@ -332,6 +332,14 @@ extern "C" {
       return intrinsics::get().call<intrinsics::get_context_free_data>(index, buff, size);
    }
 
+   capi_name get_ram_provider(capi_name user) {
+       return intrinsics::get().call<intrinsics::get_ram_provider>(user);
+   }
+
+   void confirm_approve_ram(capi_name user, const capi_name* contracts, size_t count) {
+       intrinsics::get().call<intrinsics::confirm_approve_ram>(user, contracts, count);
+   }
+
    // softfloat
    static constexpr uint32_t inv_float_eps = 0x4B000000;
    static constexpr uint64_t inv_double_eps = 0x4330000000000000;
