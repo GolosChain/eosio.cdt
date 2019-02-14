@@ -16,13 +16,13 @@ class [[eosio::contract]] receiver : public eosio::contract {
 public:
     receiver( eosio::name receiver, eosio::name code, eosio::datastream<const char*> ds) : eosio::contract(receiver, code, ds), values(_self, _self.value) {}
 
-    [[eosio::action]] void writeself(eosio::name user) {
-        require_auth(user);
-        eosio::print("Write values to the user memory: ", user);
+    [[eosio::action]] void writeself() {
+        require_auth(_self);
+        eosio::print("Write values to the user memory: ", _self);
 
-        values.emplace(user, [&] (auto& value) {
+        values.emplace(_self, [&] (auto& value) {
             value.id = values.available_primary_key();
-            value.string = "Some string written to the user memory";
+            value.string = "Some string written to the contract memory";
         });
 
     }

@@ -19,12 +19,7 @@
         {
             "name": "writeself",
             "base": "",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": "name"
-                }
-            ]
+            "fields": []
         },
         {
             "name": "writeuser",
