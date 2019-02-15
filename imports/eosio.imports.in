@@ -49,7 +49,6 @@ set_proposed_producers
 get_blockchain_parameters_packed
 set_blockchain_parameters_packed
 is_privileged
-set_privileged
 get_active_producers
 assert_recover_key
 recover_key

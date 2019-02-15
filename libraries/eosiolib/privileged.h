@@ -59,14 +59,6 @@ extern "C" {
    bool is_privileged( capi_name account );
 
    /**
-    * Set the privileged status of an account
-    *
-    * @param account - name of the account whose privileged account to be set
-    * @param is_priv - privileged status
-    */
-   void set_privileged( capi_name account, bool is_priv );
-
-   /**
     * Set the blockchain parameters
     *
     * @param data - pointer to blockchain parameters packed as bytes

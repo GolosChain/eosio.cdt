@@ -34,9 +34,6 @@ extern "C" {
    bool is_privileged( capi_name account ) {
       return intrinsics::get().call<intrinsics::is_privileged>(account);
    }
-   void set_privileged( capi_name account, bool is_priv ) {
-      return intrinsics::get().call<intrinsics::set_privileged>(account, is_priv);
-   }
    uint32_t get_active_producers( capi_name* producers, uint32_t datalen ) {
       return intrinsics::get().call<intrinsics::get_active_producers>(producers, datalen);
    }
