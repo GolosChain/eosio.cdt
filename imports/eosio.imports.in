@@ -192,3 +192,5 @@ is_provided_bw_confirmed
 set_bw_limits
 confirm_bw_limits
 get_ram_provider
+update_stake_proxied
+recall_stake_proxied
