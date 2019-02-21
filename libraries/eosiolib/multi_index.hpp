@@ -330,12 +330,15 @@ struct key_converter<std::tuple<Indices...>> {
 template<typename T, typename MultiIndex>
 struct multi_index_item: public T {
     template<typename Constructor>
-    multi_index_item(const MultiIndex* midx, Constructor&& constructor)
-    : multidx_(midx) {
+    multi_index_item(const MultiIndex& midx, Constructor&& constructor)
+    : code_(midx.get_code()),
+      scope_(midx.get_scope()) {
         constructor(*this);
     }
 
-    const MultiIndex* const multidx_;
+    const account_name_t code_;
+    const scope_t scope_ = 0;
+
     bool deleted_ = false;
     int ref_cnt_ = 0;
 }; // struct multi_index_item
@@ -726,7 +729,7 @@ private:
 
         const_iterator iterator_to(const T& obj) const {
             const auto& itm = static_cast<const item&>(obj);
-            chaindb_assert(multidx_->is_same_multidx(itm.multidx_), "object passed to iterator_to is not in multi_index");
+            chaindb_assert(multidx_->is_same_multidx(itm), "object passed to iterator_to is not in multi_index");
 
             auto key = extractor_type()(itm);
             auto pk = primary_key_extractor_type()(itm);
@@ -803,7 +806,7 @@ private:
         safe_allocate(size, "invalid unpack object size", [&](auto& data, auto& datasize) {
             auto dpk = chaindb_data(get_code(), cursor, data, datasize);
             chaindb_assert(dpk == pk, "invalid packet object");
-            ptr = item_ptr(new item(this, [&](auto& itm) {
+            ptr = item_ptr(new item(*this, [&](auto& itm) {
                 T& obj = static_cast<T&>(itm);
                 unpack_object(obj, data, datasize);
             }));
@@ -815,8 +818,8 @@ private:
         return ptr;
     }
 
-    bool is_same_multidx(const multi_index* o) const {
-        return (o == this) || (o->get_code() == get_code() && o->get_scope() == get_scope());
+    bool is_same_multidx(const item& o) const {
+        return (o.code_ == get_code() && o.scope_ == get_scope());
     }
 
 public:
@@ -893,7 +896,7 @@ public:
             static_cast<uint64_t>(get_code()) == current_receiver(),
             "cannot create objects in table of another contract");
 
-        auto ptr = item_ptr(new item(this, [&](auto& itm) {
+        auto ptr = item_ptr(new item(*this, [&](auto& itm) {
             constructor(static_cast<T&>(itm));
         }));
 
@@ -926,7 +929,7 @@ public:
             "cannot modify objects in table of another contract");
 
         const auto& itm = static_cast<const item&>(obj);
-        chaindb_assert(is_same_multidx(itm.multidx_), "object passed to modify is not in multi_index");
+        chaindb_assert(is_same_multidx(itm), "object passed to modify is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
 
@@ -973,7 +976,7 @@ public:
             static_cast<uint64_t>(get_code()) == current_receiver(),
             "cannot delete objects from table of another contract");
 
-        chaindb_assert(is_same_multidx(itm.multidx_), "object passed to erase is not in multi_index");
+        chaindb_assert(is_same_multidx(itm), "object passed to erase is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
         remove_object_from_cache(pk);
