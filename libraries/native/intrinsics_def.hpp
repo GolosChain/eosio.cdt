@@ -46,7 +46,6 @@ intrinsic_macro(set_proposed_producers) \
 intrinsic_macro(get_blockchain_parameters_packed) \
 intrinsic_macro(set_blockchain_parameters_packed) \
 intrinsic_macro(is_privileged) \
-intrinsic_macro(set_privileged) \
 intrinsic_macro(get_active_producers) \
 intrinsic_macro(db_idx64_store) \
 intrinsic_macro(db_idx64_remove) \
