@@ -10,26 +10,6 @@ extern "C" {
     * @brief Defines %C Privileged API
     */
 
-    /**
-    * Get the resource limits of an account
-    *
-    * @param account - name of the account whose resource limit to get
-    * @param ram_bytes - pointer to `int64_t` to hold retrieved ram limit in absolute bytes
-    * @param net_weight - pointer to `int64_t` to hold net limit
-    * @param cpu_weight - pointer to `int64_t` to hold cpu limit
-    */
-   void get_resource_limits( capi_name account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight );
-
-   /**
-    * Set the resource limits of an account
-    *
-    * @param account - name of the account whose resource limit to be set
-    * @param ram_bytes - ram limit in absolute bytes
-    * @param net_weight - fractionally proportionate net limit of available resources based on (weight / total_weight_of_all_accounts)
-    * @param cpu_weight - fractionally proportionate cpu limit of available resources based on (weight / total_weight_of_all_accounts)
-    */
-   void set_resource_limits( capi_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
-
    /**
     * Proposes a schedule change
     *
