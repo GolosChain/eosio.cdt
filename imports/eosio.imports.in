@@ -191,3 +191,5 @@ confirm_bw_limits
 get_ram_provider
 update_stake_proxied
 recall_stake_proxied
+save_record
+lookup_record
