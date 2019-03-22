@@ -43,8 +43,6 @@ __trunctfdf2
 __trunctfsf2
 is_feature_active
 activate_feature
-get_resource_limits
-set_resource_limits
 set_proposed_producers
 get_blockchain_parameters_packed
 set_blockchain_parameters_packed
@@ -193,3 +191,5 @@ confirm_bw_limits
 get_ram_provider
 update_stake_proxied
 recall_stake_proxied
+save_record
+lookup_record
