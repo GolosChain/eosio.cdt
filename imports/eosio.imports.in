@@ -166,10 +166,12 @@ _eosio_i32_to_f64
 _eosio_i64_to_f64
 _eosio_ui32_to_f64
 _eosio_ui64_to_f64
-chaindb_opt_find_by_pk
 chaindb_lower_bound
+chaindb_lower_bound_pk
 chaindb_upper_bound
-chaindb_find
+chaindb_upper_bound_pk
+chaindb_locate_to
+chaindb_begin
 chaindb_end
 chaindb_clone
 chaindb_close
