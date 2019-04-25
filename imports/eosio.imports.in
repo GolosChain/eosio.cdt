@@ -74,7 +74,9 @@ action_data_size
 current_receiver
 require_recipient
 require_auth
+weak_require_auth
 require_auth2
+weak_require_auth2
 has_auth
 is_account
 is_domain
