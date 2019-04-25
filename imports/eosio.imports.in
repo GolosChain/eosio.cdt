@@ -182,10 +182,12 @@ chaindb_next
 chaindb_prev
 chaindb_datasize
 chaindb_data
+chaindb_service
 chaindb_available_primary_key
 chaindb_insert
 chaindb_update
 chaindb_delete
+chaindb_ram_state
 send_event
 update_stake_proxied
 recall_stake_proxied
