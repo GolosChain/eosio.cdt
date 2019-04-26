@@ -524,6 +524,10 @@ private:
             lazy_load_object();
             return item_->service_.payer;
         }
+        bool in_ram() const {
+            lazy_load_object();
+            return item_->service_.in_ram;
+        }
 
         const_iterator_impl operator++(int) {
             const_iterator_impl result(*this);
@@ -969,7 +973,7 @@ public:
     }
 
     template<typename Lambda>
-    void modify(const_iterator itr, const account_name_t payer, Lambda&& updater) const {
+    void modify(const const_iterator& itr, const account_name_t payer, Lambda&& updater) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to modify");
         modify(*itr, payer, std::forward<Lambda&&>(updater));
     }
@@ -1052,6 +1056,11 @@ public:
         itm.service_.in_ram = true;
     }
 
+    void move_to_ram(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_ram");
+        move_to_ram(*itr);
+    }
+
     void move_to_archive(const T& obj) const {
         auto& itm = static_cast<item&>(const_cast<T&>(obj));
 
@@ -1064,6 +1073,11 @@ public:
         auto pk = primary_key_extractor_type()(obj);
         chaindb_ram_state(get_code(), get_scope(), table_name(), pk, false);
         itm.service_.in_ram = false;
+    }
+
+    void move_to_archive(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_archive");
+        move_to_archive(*itr);
     }
 
 }; // class multi_index
