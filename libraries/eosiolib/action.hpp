@@ -97,6 +97,17 @@ namespace eosio {
    }
 
    /**
+    *  Works like require_auth, but on fail returns bad result instead of breaking
+    *
+    *  @brief Verify specified account exists in the set of provided auths
+    *  @param name - name of the account to be verified
+    *  @return result of checking
+    */
+   inline bool weak_require_auth( name n ) {
+      return ::weak_require_auth( n.value );
+   }
+
+   /**
     * Packed representation of a permission level (Authorization)
     *
     * @brief Packed representation of a permission level (Authorization)
@@ -156,6 +167,18 @@ namespace eosio {
     */
    inline void require_auth( const permission_level& level ) {
       ::require_auth2( level.actor.value, level.permission.value );
+   }
+
+   /**
+    * Works like require_auth, but on fail returns bad result instead of breaking
+    *
+    * @brief Require the specified authorization for this action
+    *
+    * @param level - Authorization to be required
+    * @return result of checking
+    */
+   inline bool weak_require_auth( const permission_level& level ) {
+      return ::weak_require_auth2( level.actor.value, level.permission.value );
    }
 
    /**
