@@ -58,7 +58,7 @@ extern "C" {
     */
    uint32_t get_blockchain_parameters_packed( char* data, uint32_t datalen );
    
-   void update_stake_proxied(uint64_t token_code_raw, capi_name account, int64_t frame_length, int force);
+   void update_stake_proxied(uint64_t token_code_raw, capi_name account, int force);
    void recall_stake_proxied(uint64_t token_code_raw, capi_name grantor_name, capi_name agent_name, int32_t pct);
 
 
