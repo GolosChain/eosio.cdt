@@ -83,6 +83,12 @@ namespace eosio {
       uint32_t min_transaction_cpu_usage;
 
       /**
+      * The minimum billable RAM usage (in bytes) that the chain requires
+      * @brief The minimum billable RAM usage (in bytes) that the chain requires
+      */
+      uint32_t min_transaction_ram_usage;
+
+      /**
        * Maximum lifetime of a transacton
        * @brief Maximum lifetime of a transacton
        */
@@ -127,6 +133,8 @@ namespace eosio {
 
                         (max_block_cpu_usage)(target_block_cpu_usage_pct)
                         (max_transaction_cpu_usage)(min_transaction_cpu_usage)
+
+                        (min_transaction_ram_usage)
 
                         (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
                         (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
