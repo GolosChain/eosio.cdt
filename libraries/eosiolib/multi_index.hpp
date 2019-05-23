@@ -796,11 +796,11 @@ private:
             multidx_->modify(*itr, payer, std::forward<Lambda&&>(updater));
         }
 
-        const_iterator erase(const_iterator itr) const {
+        const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
             chaindb_assert(itr != cend(), "cannot pass end iterator to erase");
             const auto& obj = *itr;
             ++itr;
-            multidx_->erase(obj);
+            multidx_->erase(obj, payer);
             return itr;
         }
 
@@ -1018,16 +1018,16 @@ public:
         return primary_idx_.require_find(pk, error_msg);
     }
 
-    const_iterator erase(const_iterator itr) const {
+    const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to erase");
 
         const auto& obj = *itr;
         ++itr;
-        erase(obj);
+        erase(obj, payer);
         return itr;
     }
 
-    void erase(const T& obj) const {
+    void erase(const T& obj, const account_name_t payer = eosio::name()) const {
         const auto& itm = static_cast<const item&>(obj);
 
         CHAINDB_ANOTHER_CONTRACT_PROTECT(
@@ -1038,7 +1038,7 @@ public:
 
         auto pk = primary_key_extractor_type()(obj);
         remove_object_from_cache(pk);
-        chaindb_delete(get_code(), get_scope(), table_name(), pk);
+        chaindb_delete(get_code(), get_scope(), table_name(), payer, pk);
     }
 
     void move_to_ram(const T& obj) const {
