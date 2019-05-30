@@ -96,7 +96,16 @@ extern "C" {
     */
    void require_auth( capi_name name );
 
-    /**
+   /**
+    *  Works like require_auth, but on fail returns bad result instead of breaking
+    *
+    *  @brief Verify specified account exists in the set of provided auths
+    *  @param name - name of the account to be verified
+    *  @return result of checking
+    */
+   bool weak_require_auth( capi_name name );
+
+   /**
     *  Verifies that name has auth.
     *
     *  @brief Verifies that name has auth.
@@ -112,6 +121,16 @@ extern "C" {
     *  @param permission - permission level to be verified
     */
    void require_auth2( capi_name name, capi_name permission );
+
+   /**
+    *  Works like require_auth2, but on fail returns bad result instead of breaking
+    *
+    *  @brief Verify specified account exists in the set of provided auths
+    *  @param name - name of the account to be verified
+    *  @param permission - permission level to be verified
+    *  @return result of checking
+    */
+   bool weak_require_auth2( capi_name name, capi_name permission );
 
    /**
     *  Verifies that @ref name is an existing account.

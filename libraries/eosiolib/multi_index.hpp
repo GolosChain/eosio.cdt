@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <memory>
 
-#define chaindb_assert(_EXPR, ...) eosio_assert(_EXPR, __VA_ARGS__)
+#define chaindb_assert(_EXPR, ...) eosio::check(_EXPR, __VA_ARGS__)
 
 #ifndef CHAINDB_ANOTHER_CONTRACT_PROTECT
 #  define CHAINDB_ANOTHER_CONTRACT_PROTECT(_CHECK, _MSG) \
@@ -302,6 +302,12 @@ struct key_converter<std::tuple<Indices...>> {
     }
 }; // struct key_converter
 
+struct service_info {
+    eosio::name payer;
+    int  size   = 0;
+    bool in_ram = false;
+}; // struct service_info
+
 template<typename T, typename MultiIndex>
 struct multi_index_item: public T {
     template<typename Constructor>
@@ -313,6 +319,7 @@ struct multi_index_item: public T {
 
     const account_name_t code_;
     const scope_t scope_ = 0;
+    service_info  service_;
 
     bool deleted_ = false;
     int ref_cnt_ = 0;
@@ -504,6 +511,22 @@ private:
         const T* operator->() const {
             lazy_load_object();
             return static_cast<const T*>(item_.get());
+        }
+        primary_key_t pk() const {
+            lazy_open();
+            return primary_key_;
+        }
+        int size() const {
+            lazy_load_object();
+            return item_->service_.size;
+        }
+        const eosio::name& payer() const {
+            lazy_load_object();
+            return item_->service_.payer;
+        }
+        bool in_ram() const {
+            lazy_load_object();
+            return item_->service_.in_ram;
         }
 
         const_iterator_impl operator++(int) {
@@ -773,11 +796,11 @@ private:
             multidx_->modify(*itr, payer, std::forward<Lambda&&>(updater));
         }
 
-        const_iterator erase(const_iterator itr) const {
+        const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
             chaindb_assert(itr != cend(), "cannot pass end iterator to erase");
             const auto& obj = *itr;
             ++itr;
-            multidx_->erase(obj);
+            multidx_->erase(obj, payer);
             return itr;
         }
 
@@ -839,6 +862,12 @@ private:
 
         auto ptr_pk = primary_key_extractor_type()(*ptr);
         chaindb_assert(ptr_pk == pk, "invalid primary key of object");
+
+        safe_allocate(sizeof(service_info), "object doesn't exist", [&](auto& data, auto& datasize) {
+            chaindb_service(get_code(), cursor, data, datasize);
+            unpack_object(ptr->service_, data, datasize);
+        });
+
         add_object_to_cache(ptr);
         return ptr;
     }
@@ -926,12 +955,15 @@ public:
         }));
 
         auto& obj = static_cast<T&>(*ptr);
-        auto pk = primary_key_extractor_type()(obj);
+        auto  pk = primary_key_extractor_type()(obj);
         chaindb_assert(pk != end_primary_key, "invalid value of primary key");
 
         safe_allocate(pack_size(obj), "invalid size of object", [&](auto& data, auto& size) {
             pack_object(obj, data, size);
-            chaindb_insert(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            auto delta = chaindb_insert(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            ptr->service_.size   = delta;
+            ptr->service_.payer  = eosio::name(payer);
+            ptr->service_.in_ram = true;
         });
 
         add_object_to_cache(ptr);
@@ -941,7 +973,7 @@ public:
     }
 
     template<typename Lambda>
-    void modify(const_iterator itr, const account_name_t payer, Lambda&& updater) const {
+    void modify(const const_iterator& itr, const account_name_t payer, Lambda&& updater) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to modify");
         modify(*itr, payer, std::forward<Lambda&&>(updater));
     }
@@ -953,12 +985,12 @@ public:
             static_cast<uint64_t>(get_code()) == current_receiver(),
             "cannot modify objects in table of another contract");
 
-        const auto& itm = static_cast<const item&>(obj);
+        auto& mobj = const_cast<T&>(obj);
+        auto& itm = static_cast<item&>(mobj);
         chaindb_assert(is_same_multidx(itm), "object passed to modify is not in multi_index");
 
         auto pk = primary_key_extractor_type()(obj);
 
-        auto& mobj = const_cast<T&>(obj);
         updater(mobj);
 
         auto mpk = primary_key_extractor_type()(obj);
@@ -966,8 +998,9 @@ public:
 
         safe_allocate(pack_size(obj), "invalid size of object", [&](auto& data, auto& size) {
             pack_object(obj, data, size);
-            auto upk = chaindb_update(get_code(), get_scope(), table_name(), payer, pk, data, size);
-            chaindb_assert(upk == pk, "unable to update object");
+            auto delta = chaindb_update(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            itm.service_.payer = eosio::name(payer);
+            itm.service_.size += delta;
         });
     }
 
@@ -985,16 +1018,16 @@ public:
         return primary_idx_.require_find(pk, error_msg);
     }
 
-    const_iterator erase(const_iterator itr) const {
+    const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to erase");
 
         const auto& obj = *itr;
         ++itr;
-        erase(obj);
+        erase(obj, payer);
         return itr;
     }
 
-    void erase(const T& obj) const {
+    void erase(const T& obj, const account_name_t payer = eosio::name()) const {
         const auto& itm = static_cast<const item&>(obj);
 
         CHAINDB_ANOTHER_CONTRACT_PROTECT(
@@ -1005,8 +1038,46 @@ public:
 
         auto pk = primary_key_extractor_type()(obj);
         remove_object_from_cache(pk);
-        auto dpk = chaindb_delete(get_code(), get_scope(), table_name(), pk);
-        chaindb_assert(dpk == pk, "unable to delete object");
+        chaindb_delete(get_code(), get_scope(), table_name(), payer, pk);
     }
+
+    void move_to_ram(const T& obj) const {
+        auto& itm = static_cast<item&>(const_cast<T&>(obj));
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            static_cast<uint64_t>(get_code()) == current_receiver(),
+            "cannot move objects from table of another contract");
+
+        chaindb_assert(is_same_multidx(itm), "object passed to move_to_ram is not in multi_index");
+        chaindb_assert(!itm.service_.in_ram, "object passed to move_to_ram is already in RAM");
+        auto pk = primary_key_extractor_type()(obj);
+        chaindb_ram_state(get_code(), get_scope(), table_name(), pk, true);
+        itm.service_.in_ram = true;
+    }
+
+    void move_to_ram(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_ram");
+        move_to_ram(*itr);
+    }
+
+    void move_to_archive(const T& obj) const {
+        auto& itm = static_cast<item&>(const_cast<T&>(obj));
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            static_cast<uint64_t>(get_code()) == current_receiver(),
+            "cannot move objects from table of another contract");
+
+        chaindb_assert(is_same_multidx(itm), "object passed to move_to_archive is not in multi_index");
+        chaindb_assert(itm.service_.in_ram,  "object passed to move_to_archive is already in archive");
+        auto pk = primary_key_extractor_type()(obj);
+        chaindb_ram_state(get_code(), get_scope(), table_name(), pk, false);
+        itm.service_.in_ram = false;
+    }
+
+    void move_to_archive(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_archive");
+        move_to_archive(*itr);
+    }
+
 }; // class multi_index
 }  // namespace eosio
