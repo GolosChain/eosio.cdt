@@ -465,27 +465,84 @@ private:
 
     mutable primary_key_t next_primary_key_ = end_primary_key;
 
+    struct cache_map_t_ {
+        std::vector<item_ptr> vector;
+        std::map<primary_key_t, item_ptr> map;
+
+        item_ptr find(const primary_key_t pk) {
+            auto mtr = map.find(pk);
+            if (map.end() != mtr) {
+                return mtr->second;
+            }
+
+            auto vtr = std::find_if(vector.rbegin(), vector.rend(), [&pk](const auto& itm) {
+                return primary_key_extractor_type()(*itm) == pk;
+            });
+            if (vector.rend() != vtr) {
+                return (*vtr);
+            }
+            return item_ptr();
+        }
+
+        void insert(item_ptr ptr) {
+            if (vector.size() >= 8) {
+                map.emplace(primary_key_extractor_type()(*ptr), ptr);
+            } else {
+                vector.push_back(ptr);
+            }
+        }
+
+        void remove(primary_key_t pk) {
+            auto mtr = map.find(pk);
+            if (map.end() != mtr) {
+                mtr->second->deleted_ = true;
+                map.erase(mtr);
+                return;
+            }
+
+            auto vtr = std::find_if(vector.rbegin(), vector.rend(), [&pk](const auto& itm) {
+                return primary_key_extractor_type()(*itm) == pk;
+            });
+            if (vector.rend() != vtr) {
+                (*vtr)->deleted_ = true;
+                vector.erase(--(vtr.base()));
+            }
+        }
+
+        void clear() {
+            for (auto& itm_ptr: vector) {
+                itm_ptr->deleted_ = true;
+            }
+            vector.clear();
+
+            for (auto& itr: map) {
+                itr->second->deleted_ = true;
+            }
+            map.clear();
+        }
+    }; // struct cache_map_t_
+
     using cache_vector_t_ = std::vector<item_ptr>;
     struct cache_item_t_ {
         const account_name_t code;
         const scope_t scope;
-        cache_vector_t_ items_vector;
+        cache_map_t_ items_map;
 
         cache_item_t_(const account_name_t code, const scope_t scope)
         : code(code), scope(scope) {
         }
     };
 
-    static cache_vector_t_& get_items_vector(const account_name_t code, const scope_t scope) {
-        static std::list<cache_item_t_> cache_map;
+    static cache_map_t_& get_items_map(const account_name_t code, const scope_t scope) {
+        static std::deque<cache_item_t_> cache_map;
         for (auto& itm: cache_map) {
-            if (itm.code == code && itm.scope == scope) return itm.items_vector;
+            if (itm.code == code && itm.scope == scope) return itm.items_map;
         }
         cache_map.push_back({code, scope});
-        return cache_map.back().items_vector;
+        return cache_map.back().items_map;
     }
 
-    cache_vector_t_& items_vector_;
+    cache_map_t_& items_map_;
 
     template<index_name_t IndexName>
     struct const_iterator_impl: public std::iterator<std::bidirectional_iterator_tag, const T> {
@@ -822,27 +879,15 @@ private:
     index<"primary"_n, primary_key_extractor> primary_idx_;
 
     item_ptr find_object_in_cache(const primary_key_t pk) const {
-        auto itr = std::find_if(items_vector_.rbegin(), items_vector_.rend(), [&pk](const auto& itm) {
-            return primary_key_extractor_type()(*itm) == pk;
-        });
-        if (items_vector_.rend() != itr) {
-            return (*itr);
-        }
-        return item_ptr();
+        return items_map_.find(pk);
     }
 
     void add_object_to_cache(item_ptr ptr) const {
-        items_vector_.push_back(std::move(ptr));
+        items_map_.insert(ptr);
     }
 
     void remove_object_from_cache(const primary_key_t pk) const {
-        auto itr = std::find_if(items_vector_.rbegin(), items_vector_.rend(), [&pk](const auto& itm) {
-            return primary_key_extractor_type()(*itm) == pk;
-        });
-        if (items_vector_.rend() != itr) {
-            (*itr)->deleted_ = true;
-            items_vector_.erase(--(itr.base()));
-        }
+        items_map_.remove(pk);
     }
 
     item_ptr load_object(const cursor_t cursor, const primary_key_t pk) const {
@@ -882,7 +927,7 @@ public:
 
 public:
     multi_index(const account_name_t code, const scope_t scope)
-    : code_(code), scope_(scope), primary_idx_(this), items_vector_(get_items_vector(code, scope)) {
+    : code_(code), scope_(scope), primary_idx_(this), items_map_(get_items_map(code, scope)) {
     }
 
     constexpr static table_name_t table_name() { return TableName; }
@@ -937,10 +982,7 @@ public:
     }
 
     void flush_cache() {
-        for (auto& itm_ptr: items_vector_) {
-            itm_ptr->deleted_ = true;
-        }
-        items_vector_.clear();
+        items_map_.clear();
     }
 
     template<typename Lambda>
