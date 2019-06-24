@@ -404,8 +404,7 @@ struct generation_utils {
          "signature",
          "symbol",
          "symbol_code",
-         "asset",
-         "extended_asset"
+         "asset"
       };
       return builtins.count(_translate_type(t)) >= 1;
    }

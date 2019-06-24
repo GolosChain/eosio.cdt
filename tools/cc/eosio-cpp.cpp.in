@@ -74,14 +74,8 @@ namespace eosio { namespace cdt {
 
    class EosioRecordMatcher : public MatchFinder::MatchCallback {
       public:
-         bool has_added_clauses = false;
          virtual void run( const MatchFinder::MatchResult& res ) {
             if (const clang::CXXRecordDecl* decl = res.Nodes.getNodeAs<clang::CXXRecordDecl>("eosio_tool")) {
-               if (!has_added_clauses) {
-                  get_abigen_ref().add_clauses(get_abigen_ref().parse_clauses());
-                  get_abigen_ref().add_contracts(get_abigen_ref().parse_contracts());
-                  has_added_clauses = true;
-               }
                if (decl->isEosioAction() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
                   get_abigen_ref().add_struct(decl);
                   get_abigen_ref().add_action(decl);

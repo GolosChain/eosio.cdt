@@ -32,21 +32,17 @@
         {
             "name": "test1",
             "type": "test1",
-            "ricardian_contract": ""
         },
         {
             "name": "test2",
             "type": "test2",
-            "ricardian_contract": ""
         },
         {
             "name": "test3",
             "type": "test2",
-            "ricardian_contract": ""
         }
 
     ],
     "tables": [],
-    "ricardian_clauses": [],
     "variants": []
 }

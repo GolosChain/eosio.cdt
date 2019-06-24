@@ -31,7 +31,6 @@ class ABIMerger {
          ret["structs"]  = merge_structs(other);
          ret["actions"]  = merge_actions(other);
          ret["tables"]   = merge_tables(other);
-         ret["ricardian_clauses"]  = merge_clauses(other);
          ret["variants"] = merge_variants(other);
          return ret;
       }
@@ -66,14 +65,11 @@ class ABIMerger {
 
       static bool action_is_same(ojson a, ojson b) {
          return a["name"] == b["name"] &&
-                a["type"] == b["type"] &&
-                a["ricardian_contract"] == b["ricardian_contract"];
+                a["type"] == b["type"];
       }
 
       template <typename T>
       static bool action_is_almost_same(ojson a, ojson b, T& rc) {
-         if (a["ricardian_contract"].empty())
-            rc = b["ricardian_contract"];
          return a["name"] == b["name"] &&
                 a["type"] == b["type"];
       }
@@ -100,12 +96,7 @@ class ABIMerger {
                 a["key_types"] == b["key_types"];
       }
       
-      static bool clause_is_same(ojson a, ojson b) {
-         return a["id"] == b["id"] &&
-                a["body"] == b["body"];
-      } 
-         
-      template <typename F> 
+      template <typename F>
       void add_object(ojson& ret, ojson a, ojson b, std::string type, std::string id, F&& is_same_func) {
          for (auto obj_a : a[type].array_range()) {
             ret.push_back(obj_a);
@@ -154,12 +145,6 @@ class ABIMerger {
          ojson tabs = ojson::array();
          add_object(tabs, abi, b, "tables", "name", table_is_same);
          return tabs;
-      }
-
-      ojson merge_clauses(ojson b) {
-         ojson cls = ojson::array();
-         add_object(cls, abi, b, "ricardian_clauses", "id", clause_is_same);
-         return cls;
       }
 
       ojson abi;

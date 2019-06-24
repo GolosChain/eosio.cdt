@@ -1,7 +1,9 @@
 #pragma once
-#include <eosiolib/event.h>
-#include <eosiolib/datastream.hpp>
-#include <eosiolib/serialize.hpp>
+#include "../../core/eosio/serialize.hpp"
+#include "../../core/eosio/datastream.hpp"
+#include "../../core/eosio/name.hpp"
+
+#include <vector>
 
 #include <boost/preprocessor/variadic/size.hpp>
 #include <boost/preprocessor/variadic/to_tuple.hpp>
@@ -9,6 +11,13 @@
 #include <boost/preprocessor/facilities/overload.hpp>
 
 namespace eosio {
+   namespace internal_use_do_not_use {
+      extern "C" {
+
+         __attribute__((eosio_wasm_import))
+         void send_event(char *serialized_action, int32_t size);
+      }
+   }
 
    /**
     * @defgroup eventcppapi Event C++ API
@@ -67,7 +76,7 @@ namespace eosio {
        */
       template<typename T>
       event( struct name a, struct name n, T&& value )
-      :account(a), name(n), data(pack(std::forward<T>(value))) {}
+      :account(a), name(n), data(eosio::pack(std::forward<T>(value))) {}
 
       EOSLIB_SERIALIZE( event, (account)(name)(data) )
 
@@ -78,7 +87,7 @@ namespace eosio {
        */
       void send() const {
          auto serialize = pack(*this);
-         ::send_event(serialize.data(), serialize.size());
+         internal_use_do_not_use::send_event(serialize.data(), serialize.size());
       }
 
       /**
@@ -90,7 +99,7 @@ namespace eosio {
        */
       template<typename T>
       T data_as() {
-         return unpack<T>( &data[0], data.size() );
+         return eosio::unpack<T>( &data[0], data.size() );
       }
 
    };

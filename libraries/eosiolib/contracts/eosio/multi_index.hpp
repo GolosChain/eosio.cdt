@@ -1,7 +1,3 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 
 #include "../../contracts/eosio/action.hpp"
@@ -20,1896 +16,1170 @@
 #include <algorithm>
 #include <memory>
 
+#define chaindb_assert(_EXPR, ...) eosio::check(_EXPR, __VA_ARGS__)
+
+#ifndef CHAINDB_ANOTHER_CONTRACT_PROTECT
+#  define CHAINDB_ANOTHER_CONTRACT_PROTECT(_CHECK, _MSG) \
+     chaindb_assert(_CHECK, _MSG)
+#endif // CHAINDB_ANOTHER_CONTRACT_PROTECT
+
+
 namespace eosio {
-  namespace internal_use_do_not_use {
-    extern "C" {
+using account_name_t = eosio::name::raw;
+using payer_name_t   = eosio::name::raw;
+using scope_t        = uint64_t;
+using table_name_t   = eosio::name::raw;
+using index_name_t   = eosio::name::raw;
+using cursor_t       = int32_t;
+
+typedef uint64_t primary_key_t;
+static constexpr primary_key_t end_primary_key = static_cast<primary_key_t>(-1);
+static constexpr primary_key_t unset_primary_key = static_cast<primary_key_t>(-2);
+
+namespace internal_use_do_not_use {
+   extern "C" {
       __attribute__((eosio_wasm_import))
-      int32_t db_store_i64(uint64_t, uint64_t, uint64_t, uint64_t,  const void*, uint32_t);
+      cursor_t chaindb_begin(account_name_t, scope_t, table_name_t, index_name_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_end(account_name_t, scope_t, table_name_t, index_name_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_lower_bound(account_name_t, scope_t, table_name_t, index_name_t, void* key, int32_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_lower_bound_pk(account_name_t, scope_t, table_name_t, primary_key_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_upper_bound(account_name_t, scope_t, table_name_t, index_name_t, void* key, int32_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_upper_bound_pk(account_name_t, scope_t, table_name_t, primary_key_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_locate_to(account_name_t, scope_t, table_name_t, index_name_t, primary_key_t, void* key, int32_t);
+      __attribute__((eosio_wasm_import))
+      cursor_t chaindb_clone(account_name_t, cursor_t);
 
       __attribute__((eosio_wasm_import))
-      void db_update_i64(int32_t, uint64_t, const void*, uint32_t);
+      void chaindb_close(account_name_t, cursor_t);
 
       __attribute__((eosio_wasm_import))
-      void db_remove_i64(int32_t);
+      primary_key_t chaindb_current(account_name_t, cursor_t);
+      __attribute__((eosio_wasm_import))
+      primary_key_t chaindb_next(account_name_t, cursor_t);
+      __attribute__((eosio_wasm_import))
+      primary_key_t chaindb_prev(account_name_t, cursor_t);
 
       __attribute__((eosio_wasm_import))
-      int32_t db_get_i64(int32_t, const void*, uint32_t);
+      int32_t chaindb_datasize(account_name_t, cursor_t);
+      __attribute__((eosio_wasm_import))
+      primary_key_t chaindb_data(account_name_t, cursor_t, void* data, int32_t size);
+      __attribute__((eosio_wasm_import))
+      int32_t chaindb_service(account_name_t, cursor_t, void* data, int32_t size);
 
       __attribute__((eosio_wasm_import))
-      int32_t db_next_i64(int32_t, uint64_t*);
+      primary_key_t chaindb_available_primary_key(account_name_t, scope_t, table_name_t);
 
       __attribute__((eosio_wasm_import))
-      int32_t db_previous_i64(int32_t, uint64_t*);
+      int32_t chaindb_insert(account_name_t, scope_t, table_name_t, payer_name_t, primary_key_t, void* data, int32_t);
+      __attribute__((eosio_wasm_import))
+      int32_t chaindb_update(account_name_t, scope_t, table_name_t, payer_name_t, primary_key_t, void* data, int32_t);
+      __attribute__((eosio_wasm_import))
+      int32_t chaindb_delete(account_name_t, scope_t, table_name_t, payer_name_t, primary_key_t);
 
       __attribute__((eosio_wasm_import))
-      int32_t db_find_i64(uint64_t, uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_lowerbound_i64(uint64_t, uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_upperbound_i64(uint64_t, uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_end_i64(uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_store(uint64_t, uint64_t, uint64_t, uint64_t, const uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx64_update(int32_t, uint64_t, const uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx64_remove(int32_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_next(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_previous(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_find_primary(uint64_t, uint64_t, uint64_t, uint64_t*, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_find_secondary(uint64_t, uint64_t, uint64_t, const uint64_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_lowerbound(uint64_t, uint64_t, uint64_t, uint64_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_upperbound(uint64_t, uint64_t, uint64_t, uint64_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx64_end(uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_store(uint64_t, uint64_t, uint64_t, uint64_t, const uint128_t*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx128_update(int32_t, uint64_t, const uint128_t*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx128_remove(int32_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_next(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_previous(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_find_primary(uint64_t, uint64_t, uint64_t, uint128_t*, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_find_secondary(uint64_t, uint64_t, uint64_t, const uint128_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_lowerbound(uint64_t, uint64_t, uint64_t, uint128_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_upperbound(uint64_t, uint64_t, uint64_t, uint128_t*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx128_end(uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_store(uint64_t, uint64_t, uint64_t, uint64_t, const uint128_t*, uint32_t);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx256_update(int32_t, uint64_t, const uint128_t*, uint32_t);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx256_remove(int32_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_next(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_previous(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_find_primary(uint64_t, uint64_t, uint64_t, uint128_t*, uint32_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_find_secondary(uint64_t, uint64_t, uint64_t, const uint128_t*, uint32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_lowerbound(uint64_t, uint64_t, uint64_t, uint128_t*, uint32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_upperbound(uint64_t, uint64_t, uint64_t, uint128_t*, uint32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx256_end(uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_store(uint64_t, uint64_t, uint64_t, uint64_t, const double*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx_double_update(int32_t, uint64_t, const double*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx_double_remove(int32_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_next(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_previous(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_find_primary(uint64_t, uint64_t, uint64_t, double*, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_find_secondary(uint64_t, uint64_t, uint64_t, const double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_lowerbound(uint64_t, uint64_t, uint64_t, double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_upperbound(uint64_t, uint64_t, uint64_t, double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_double_end(uint64_t, uint64_t, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_store(uint64_t, uint64_t, uint64_t, uint64_t, const long double*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx_long_double_update(int32_t, uint64_t, const long double*);
-
-      __attribute__((eosio_wasm_import))
-      void db_idx_long_double_remove(int32_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_next(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_previous(int32_t, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_find_primary(uint64_t, uint64_t, uint64_t, long double*, uint64_t);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_find_secondary(uint64_t, uint64_t, uint64_t, const long double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_lowerbound(uint64_t, uint64_t, uint64_t, long double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_upperbound(uint64_t, uint64_t, uint64_t, long double*, uint64_t*);
-
-      __attribute__((eosio_wasm_import))
-      int32_t db_idx_long_double_end(uint64_t, uint64_t, uint64_t);
-    }
-  };
+      void chaindb_ram_state(account_name_t, scope_t, table_name_t, primary_key_t, int32_t);
+   }
+}
 
 constexpr static inline name same_payer{};
 
 template<class Class,typename Type,Type (Class::*PtrToMemberFunction)()const>
-struct const_mem_fun
-{
+struct const_mem_fun {
   typedef typename std::remove_reference<Type>::type result_type;
 
   template<typename ChainedPtr>
 
-  auto operator()(const ChainedPtr& x)const -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::value, Type>
-  {
+  auto operator()(const ChainedPtr& x)const -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::value, Type> {
     return operator()(*x);
   }
 
-  Type operator()(const Class& x)const
-  {
+  Type operator()(const Class& x)const {
     return (x.*PtrToMemberFunction)();
   }
 
-  Type operator()(const std::reference_wrapper<const Class>& x)const
-  {
+  Type operator()(const std::reference_wrapper<const Class>& x)const {
     return operator()(x.get());
   }
 
-  Type operator()(const std::reference_wrapper<Class>& x)const
-  {
+  Type operator()(const std::reference_wrapper<Class>& x)const {
     return operator()(x.get());
   }
 };
 
-#define WRAP_SECONDARY_SIMPLE_TYPE(IDX, TYPE)\
-template<>\
-struct secondary_index_db_functions<TYPE> {\
-   static int32_t db_idx_next( int32_t iterator, uint64_t* primary )          { return internal_use_do_not_use::db_##IDX##_next( iterator, primary ); } \
-   static int32_t db_idx_previous( int32_t iterator, uint64_t* primary )      { return internal_use_do_not_use::db_##IDX##_previous( iterator, primary ); } \
-   static void    db_idx_remove( int32_t iterator  )                          { internal_use_do_not_use::db_##IDX##_remove( iterator ); } \
-   static int32_t db_idx_end( uint64_t code, uint64_t scope, uint64_t table ) { return internal_use_do_not_use::db_##IDX##_end( code, scope, table ); } \
-   static int32_t db_idx_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const TYPE& secondary ) {\
-     return internal_use_do_not_use::db_##IDX##_store( scope, table, payer, id, &secondary ); \
-   }\
-   static void    db_idx_update( int32_t iterator, uint64_t payer, const TYPE& secondary ) {\
-     internal_use_do_not_use::db_##IDX##_update( iterator, payer, &secondary ); \
-   }\
-   static int32_t db_idx_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t primary, TYPE& secondary ) {\
-     return internal_use_do_not_use::db_##IDX##_find_primary( code, scope, table, &secondary, primary ); \
-   }\
-   static int32_t db_idx_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_find_secondary( code, scope, table, &secondary, &primary ); \
-   }\
-   static int32_t db_idx_lowerbound( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_lowerbound( code, scope, table, &secondary, &primary ); \
-   }\
-   static int32_t db_idx_upperbound( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_upperbound( code, scope, table, &secondary, &primary ); \
-   }\
-};
+template<typename A>
+struct get_result_type {
+    using type = typename A::result_type;
+}; // struct get_result_type
 
-#define WRAP_SECONDARY_ARRAY_TYPE(IDX, TYPE)\
-template<>\
-struct secondary_index_db_functions<TYPE> {\
-   static int32_t db_idx_next( int32_t iterator, uint64_t* primary )          { return internal_use_do_not_use::db_##IDX##_next( iterator, primary ); } \
-   static int32_t db_idx_previous( int32_t iterator, uint64_t* primary )      { return internal_use_do_not_use::db_##IDX##_previous( iterator, primary ); } \
-   static void    db_idx_remove( int32_t iterator )                           { internal_use_do_not_use::db_##IDX##_remove( iterator ); } \
-   static int32_t db_idx_end( uint64_t code, uint64_t scope, uint64_t table ) { return internal_use_do_not_use::db_##IDX##_end( code, scope, table ); } \
-   static int32_t db_idx_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const TYPE& secondary ) {\
-     return internal_use_do_not_use::db_##IDX##_store( scope, table, payer, id, secondary.data(), TYPE::num_words() ); \
-   }\
-   static void    db_idx_update( int32_t iterator, uint64_t payer, const TYPE& secondary ) {\
-     internal_use_do_not_use::db_##IDX##_update( iterator, payer, secondary.data(), TYPE::num_words() ); \
-   }\
-   static int32_t db_idx_find_primary( uint64_t code, uint64_t scope, uint64_t table, uint64_t primary, TYPE& secondary ) {\
-     return internal_use_do_not_use::db_##IDX##_find_primary( code, scope, table, secondary.data(), TYPE::num_words(), primary ); \
-   }\
-   static int32_t db_idx_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_find_secondary( code, scope, table, secondary.data(), TYPE::num_words(), &primary ); \
-   }\
-   static int32_t db_idx_lowerbound( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_lowerbound( code, scope, table, secondary.data(), TYPE::num_words(), &primary ); \
-   }\
-   static int32_t db_idx_upperbound( uint64_t code, uint64_t scope, uint64_t table, TYPE& secondary, uint64_t& primary ) {\
-     return internal_use_do_not_use::db_##IDX##_upperbound( code, scope, table, secondary.data(), TYPE::num_words(), &primary ); \
-   }\
-};
+template<typename Value, typename... Fields>
+struct composite_key {
+    using result_type = bool;
+    using key_type = std::tuple<typename get_result_type<Fields>::type...>;
 
-#define MAKE_TRAITS_FOR_ARITHMETIC_SECONDARY_KEY(TYPE)\
-template<>\
-struct secondary_key_traits<TYPE> {\
-   static_assert( std::numeric_limits<TYPE>::is_specialized, "TYPE does not have specialized numeric_limits" );\
-   static constexpr TYPE true_lowest() { return std::numeric_limits<TYPE>::lowest(); }\
-};
+    auto operator()(const Value& v) {
+        return std::make_tuple(Fields()(v)...);
+    }
+}; // struct composite_key
 
-namespace _multi_index_detail {
+namespace _detail {
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct const_member_base {
+    typedef Type result_type;
 
-   namespace hana = boost::hana;
+    template<typename ChainedPtr>
+    auto operator()(const ChainedPtr& x) const
+    -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::type, Type&> {
+        return operator()(*x);
+    }
 
-   template<typename T>
-   struct secondary_index_db_functions;
+    Type& operator()(const Class& x) const {
+        return x.*PtrToMember;
+    }
+    Type& operator()(const std::reference_wrapper<const Class>& x) const {
+        return operator()(x.get());
+    }
+    Type& operator()(const std::reference_wrapper<Class>& x) const {
+        return operator()(x.get());
+    }
+}; // struct const_member_base
 
-   template<typename T>
-   struct secondary_key_traits;
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct non_const_member_base {
+    typedef Type result_type;
 
-   WRAP_SECONDARY_SIMPLE_TYPE(idx64,  uint64_t)
-   MAKE_TRAITS_FOR_ARITHMETIC_SECONDARY_KEY(uint64_t)
+    template<typename ChainedPtr>
+    auto operator()(const ChainedPtr& x) const
+    -> std::enable_if_t<!std::is_convertible<const ChainedPtr&, const Class&>::type, Type&> {
+        return operator()(*x);
+    }
 
-   WRAP_SECONDARY_SIMPLE_TYPE(idx128, uint128_t)
-   MAKE_TRAITS_FOR_ARITHMETIC_SECONDARY_KEY(uint128_t)
-
-   WRAP_SECONDARY_SIMPLE_TYPE(idx_double, double)
-   template<>
-   struct secondary_key_traits<double> {
-      static constexpr double true_lowest() { return -std::numeric_limits<double>::infinity(); }
-   };
-
-   WRAP_SECONDARY_SIMPLE_TYPE(idx_long_double, long double)
-   template<>
-   struct secondary_key_traits<long double> {
-      static constexpr long double true_lowest() { return -std::numeric_limits<long double>::infinity(); }
-   };
-
-   WRAP_SECONDARY_ARRAY_TYPE(idx256, eosio::fixed_bytes<32>)
-   template<>
-   struct secondary_key_traits<eosio::fixed_bytes<32>> {
-      static constexpr eosio::fixed_bytes<32> true_lowest() { return eosio::fixed_bytes<32>(); }
-   };
-
+    const Type& operator()(const Class& x) const {
+        return x.*PtrToMember;
+    }
+    Type& operator()(Class& x) const {
+        return x.*PtrToMember;
+    }
+    const Type& operator()(const std::reference_wrapper<const Class>& x) const {
+        return operator()(x.get());
+    }
+    Type& operator()(const std::reference_wrapper<Class>& x) const {
+        return operator()(x.get());
+    }
+}; // struct non_const_member_base
 }
 
-/**
- *  The indexed_by struct is used to instantiate the indices for the Multi-Index table. In EOSIO, up to 16 secondary indices can be specified.
- *
- *  @ingroup multiindex
- *  @tparam IndexName - is the name of the index. The name must be provided as an EOSIO base32 encoded 64-bit integer and must conform to the EOSIO naming requirements of a maximum of 13 characters, the first twelve from the lowercase characters a-z, digits 1-5, and ".", and if there is a 13th character, it is restricted to lowercase characters a-p and ".".
- *  @tparam Extractor - is a function call operator that takes a const reference to the table object type and returns either a secondary key type or a reference to a secondary key type. It is recommended to use the `eosio::const_mem_fun` template, which is a type alias to the `boost::multi_index::const_mem_fun`. See the documentation for the Boost `const_mem_fun` key extractor for more details.
- *
- *  Example:
-       *
-*
- *  @code
- *  #include <eosiolib/eosio.hpp>
- *  using namespace eosio;
- *  class mycontract: eosio::contract {
- *    struct record {
- *       uint64_t    primary;
- *       uint128_t   secondary;
- *       uint64_t primary_key() const { return primary; }
- *       uint64_t get_secondary() const { return secondary; }
- *     };
- *    public:
- *      mycontract(name receiver, name code, datastream<const char*> ds):contract(receiver, code, ds){}
- *      void myaction() {
- *        auto code = _self;
- *        auto scope = _self;
- *        multi_index<"mytable"_n, record,
- *                   indexed_by< "bysecondary"_n, const_mem_fun<record, uint128_t, &record::get_secondary> > > table( code, scope);
- *      }
- *  }
- *  EOSIO_DISPATCH( mycontract, (myaction) )
- *  @endcode
- */
-template<name::raw IndexName, typename Extractor>
-struct indexed_by {
-   enum constants { index_name   = static_cast<uint64_t>(IndexName) };
-   typedef Extractor secondary_extractor_type;
+template<class Class,typename Type,Type Class::*PtrToMember>
+struct member: std::conditional<
+    std::is_const<Type>::value,
+    _detail::const_member_base<Class,Type,PtrToMember>,
+    _detail::non_const_member_base<Class,Type,PtrToMember>
+  >::type
+{
 };
 
-/**
- *  @defgroup multiindex Multi Index Table
- *  @ingroup contracts
- *
- *  @brief Defines EOSIO Multi Index Table
- *  @details EOSIO Multi-Index API provides a C++ interface to the EOSIO database. It is patterned after Boost Multi Index Container.
- *  EOSIO Multi-Index table requires exactly a uint64_t primary key. For the table to be able to retrieve the primary key,
- *  the object stored inside the table is required to have a const member function called primary_key() that returns uint64_t.
- *  EOSIO Multi-Index table also supports up to 16 secondary indices. The type of the secondary indices could be any of:
- *  - uint64_t
- *  - uint128_t
- *  - double
- *  - long double
- *  - eosio::checksum256
- *
- *  @tparam TableName - name of the table
- *  @tparam T - type of the data stored inside the table
- *  @tparam Indices - secondary indices for the table, up to 16 indices is supported here
- *
- *  Example:
-       *
- *  @code
- *  #include <eosiolib/eosio.hpp>
- *  using namespace eosio;
- *  class mycontract: contract {
- *    struct record {
- *      uint64_t    primary;
- *      uint64_t    secondary_1;
- *      uint128_t   secondary_2;
- *      checksum256 secondary_3;
- *      double      secondary_4;
- *      long double secondary_5;
- *      uint64_t primary_key() const { return primary; }
- *      uint64_t get_secondary_1() const { return secondary_1; }
- *      uint128_t get_secondary_2() const { return secondary_2; }
- *      checksum256 get_secondary_3() const { return secondary_3; }
- *      double get_secondary_4() const { return secondary_4; }
- *      long double get_secondary_5() const { return secondary_5; }
- *    };
- *    public:
- *      mycontract(name receiver, name code, datastream<const char*> ds):contract(receiver, code, ds){}
- *      void myaction() {
- *        auto code = _self;
- *        auto scope = _self;
- *        multi_index<"mytable"_n, record,
- *          indexed_by< "bysecondary1"_n, const_mem_fun<record, uint64_t, &record::get_secondary_1> >,
- *          indexed_by< "bysecondary2"_n, const_mem_fun<record, uint128_t, &record::get_secondary_2> >,
- *          indexed_by< "bysecondary3"_n, const_mem_fun<record, checksum256, &record::get_secondary_3> >,
- *          indexed_by< "bysecondary4"_n, const_mem_fun<record, double, &record::get_secondary_4> >,
- *          indexed_by< "bysecondary5"_n, const_mem_fun<record, long double, &record::get_secondary_5> >
- *        > table( code, scope);
- *      }
- *  }
- *  EOSIO_DISPATCH( mycontract, (myaction) )
- *  @endcode
- */
-
-template<name::raw TableName, typename T, typename... Indices>
-class multi_index
+//
+//  intrusive_ptr
+//
+//  A smart pointer that uses intrusive reference counting.
+//
+//  Relies on unqualified calls to
+//
+//      void intrusive_ptr_add_ref(T * p);
+//      void intrusive_ptr_release(T * p);
+//
+//          (p != 0)
+//
+//  The object is responsible for destroying itself.
+//
+template<class T> class intrusive_ptr
 {
-   private:
+private:
 
-      static_assert( sizeof...(Indices) <= 16, "multi_index only supports a maximum of 16 secondary indices" );
+    typedef intrusive_ptr this_type;
 
-      constexpr static bool validate_table_name( name n ) {
-         // Limit table names to 12 characters so that the last character (4 bits) can be used to distinguish between the secondary indices.
-         return n.length() < 13; //(n & 0x000000000000000FULL) == 0;
-      }
+public:
 
-      constexpr static size_t max_stack_buffer_size = 512;
+    typedef T element_type;
 
-      static_assert( validate_table_name( name(TableName) ), "multi_index does not support table names with a length greater than 12");
+    intrusive_ptr() noexcept : px( 0 ) {
+    }
 
-      name     _code;
-      uint64_t _scope;
+    intrusive_ptr( T * p, bool add_ref = true ): px( p ) {
+        if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
+    }
 
-      mutable uint64_t _next_primary_key;
+    intrusive_ptr(intrusive_ptr const & rhs): px( rhs.px ) {
+        if( px != 0 ) intrusive_ptr_add_ref( px );
+    }
 
-      enum next_primary_key_tags : uint64_t {
-         no_available_primary_key = static_cast<uint64_t>(-2), // Must be the smallest uint64_t value compared to all other tags
-         unset_next_primary_key = static_cast<uint64_t>(-1)
-      };
+    ~intrusive_ptr() {
+        if( px != 0 ) intrusive_ptr_release( px );
+    }
 
-      struct item : public T
-      {
-         template<typename Constructor>
-         item( const multi_index* idx, Constructor&& c )
-         :__idx(idx){
-            c(*this);
-         }
+    intrusive_ptr & operator=(intrusive_ptr const & rhs) {
+        this_type(rhs).swap(*this);
+        return *this;
+    }
 
-         const multi_index* __idx;
-         int32_t            __primary_itr;
-         int32_t            __iters[sizeof...(Indices)+(sizeof...(Indices)==0)];
-      };
+    intrusive_ptr & operator=(T * rhs) {
+        this_type(rhs).swap(*this);
+        return *this;
+    }
 
-      struct item_ptr
-      {
-         item_ptr(std::unique_ptr<item>&& i, uint64_t pk, int32_t pitr)
-         : _item(std::move(i)), _primary_key(pk), _primary_itr(pitr) {}
+    void reset() noexcept {
+        this_type().swap( *this );
+    }
 
-         std::unique_ptr<item> _item;
-         uint64_t              _primary_key;
-         int32_t               _primary_itr;
-      };
+    void reset( T * rhs ) {
+        this_type( rhs ).swap( *this );
+    }
 
-      mutable std::vector<item_ptr> _items_vector;
+    void reset( T * rhs, bool add_ref ) {
+        this_type( rhs, add_ref ).swap( *this );
+    }
 
-      template<name::raw IndexName, typename Extractor, uint64_t Number, bool IsConst>
-      struct index {
-         public:
-            typedef Extractor  secondary_extractor_type;
-            typedef typename std::decay<decltype( Extractor()(nullptr) )>::type secondary_key_type;
+    T * get() const noexcept {
+        return px;
+    }
 
-            constexpr static bool validate_index_name( eosio::name n ) {
-               return n.value != 0 && n != eosio::name("primary"); // Primary is a reserve index name.
+    T * detach() noexcept {
+        T * ret = px;
+        px = 0;
+        return ret;
+    }
+
+    operator bool () const noexcept {
+        return px != 0;
+    }
+
+    T & operator*() const {
+        chaindb_assert( px != 0, "px != 0" );
+        return *px;
+    }
+
+    T * operator->() const {
+        chaindb_assert( px != 0, "px != 0" );
+        return px;
+    }
+
+    void swap(intrusive_ptr & rhs) noexcept {
+        T * tmp = px;
+        px = rhs.px;
+        rhs.px = tmp;
+    }
+
+private:
+    T * px;
+};
+
+namespace _detail {
+    template <typename T> constexpr T& min(T& a, T& b) {
+        return a > b ? b : a;
+    }
+
+    template<int I, int Max> struct comparator_helper {
+        template<typename L, typename V>
+        bool operator()(const L& left, const V& value) const {
+            return std::get<I>(left) == std::get<I>(value) &&
+                comparator_helper<I + 1, Max>()(left, value);
+        }
+    }; // struct comparator_helper
+
+    template<int I> struct comparator_helper<I, I> {
+        template<typename... L> bool operator()(L&&...) const { return true; }
+    }; // struct comparator_helper
+
+    template<int I, int Max> struct converter_helper {
+        template<typename L, typename V> void operator()(L& left, const V& value) const {
+            std::get<I>(left) = std::get<I>(value);
+            converter_helper<I + 1, Max>()(left, value);
+        }
+    }; // struct converter_helper
+
+    template<int I> struct converter_helper<I, I> {
+        template<typename... L> void operator()(L&&...) const { }
+    }; // struct converter_helper
+} // namespace _detail
+
+template<typename Key>
+struct key_comparator {
+    static bool compare_eq(const Key& left, const Key& right) {
+        return left == right;
+    }
+}; // struct key_comparator
+
+template<typename... Indices>
+struct key_comparator<std::tuple<Indices...>> {
+    using key_type = std::tuple<Indices...>;
+
+    template<typename Value>
+    static bool compare_eq(const key_type& left, const Value& value) {
+        return std::get<0>(left) == value;
+    }
+
+    template<typename... Values>
+    static bool compare_eq(const key_type& left, const std::tuple<Values...>& value) {
+        using value_type = std::tuple<Values...>;
+        using namespace _detail;
+
+        return comparator_helper<0, min(std::tuple_size<value_type>::value, std::tuple_size<key_type>::value)>()(left, value);
+    }
+}; // struct key_comparator
+
+template<typename Key>
+struct key_converter {
+    static Key convert(const Key& key) {
+        return key;
+    }
+}; // struct key_converter
+
+template<typename... Indices>
+struct key_converter<std::tuple<Indices...>> {
+    using key_type = std::tuple<Indices...>;
+
+    template<typename Value>
+    static key_type convert(const Value& value) {
+        key_type index;
+        std::get<0>(index) = value;
+        return index;
+    }
+
+    template<typename... Values>
+    static key_type convert(const std::tuple<Values...>& value) {
+        using namespace _detail;
+        using value_type = std::tuple<Values...>;
+
+        key_type index;
+        converter_helper<0, min(std::tuple_size<value_type>::value, std::tuple_size<key_type>::value)>()(index, value);
+        return index;
+    }
+}; // struct key_converter
+
+struct service_info {
+    eosio::name payer;
+    int  size   = 0;
+    bool in_ram = false;
+}; // struct service_info
+
+template<typename T, typename MultiIndex>
+struct multi_index_item: public T {
+    template<typename Constructor>
+    multi_index_item(const MultiIndex& midx, Constructor&& constructor)
+    : code_(midx.get_code()),
+      scope_(midx.get_scope()) {
+        constructor(*this);
+    }
+
+    const account_name_t code_;
+    const scope_t scope_ = 0;
+    service_info  service_;
+
+    bool deleted_ = false;
+    int ref_cnt_ = 0;
+}; // struct multi_index_item
+
+template <typename T, typename MultiIndex>
+inline void intrusive_ptr_add_ref(eosio::multi_index_item<T, MultiIndex>* obj) {
+    ++obj->ref_cnt_;
+}
+
+template <typename T, typename MultiIndex>
+inline void intrusive_ptr_release(eosio::multi_index_item<T, MultiIndex>* obj) {
+    --obj->ref_cnt_;
+    if (!obj->ref_cnt_) delete obj;
+}
+
+template<index_name_t IndexName, typename Extractor>
+struct indexed_by {
+    enum constants { index_name = static_cast<uint64_t>(IndexName) };
+    typedef Extractor extractor_type;
+};
+
+struct primary_key_extractor {
+    template<typename T>
+    primary_key_t operator()(const T& o) const {
+        return o.primary_key();
+    }
+}; // struct primary_key_extractor
+
+template<typename O>
+void pack_object(const O& o, char* data, const size_t size) {
+    datastream<char*> ds(data, size);
+    ds << o;
+}
+
+template<typename O>
+void unpack_object(O& o, const char* data, const size_t size) {
+    datastream<const char*> ds(data, size);
+    ds >> o;
+}
+
+template<typename Size, typename Lambda>
+void safe_allocate(const Size size, const char* error_msg, Lambda&& callback) {
+    chaindb_assert(size > 0, error_msg);
+
+    constexpr static size_t max_stack_data_size = 512;
+
+    struct allocator {
+        char* data = nullptr;
+        const bool use_malloc;
+        const size_t size;
+        allocator(const size_t s)
+            : use_malloc(s > max_stack_data_size), size(s) {
+            if (use_malloc) data = static_cast<char*>(malloc(s));
+        }
+
+        ~allocator() {
+            if (use_malloc) free(data);
+        }
+    } alloc(static_cast<size_t>(size));
+
+    if (!alloc.use_malloc) alloc.data = static_cast<char*>(alloca(alloc.size));
+    chaindb_assert(alloc.data != nullptr, "unable to allocate memory");
+
+    callback(alloc.data, alloc.size);
+}
+
+template<eosio::name::raw TableName, eosio::name::raw IndexName> struct lower_bound final {
+    template<typename Key>
+    cursor_t operator()(account_name_t code, scope_t scope, const Key& key) const {
+        cursor_t cursor;
+        safe_allocate(pack_size(key), "Invalid size of key on lower_bound", [&](auto& data, auto& size) {
+            pack_object(key, data, size);
+            cursor = internal_use_do_not_use::chaindb_lower_bound(code, scope, TableName, IndexName, data, size);
+        });
+        return cursor;
+    }
+}; // struct lower_bound
+
+template<eosio::name::raw TableName> struct lower_bound<TableName, "primary"_n> final {
+    cursor_t operator()(account_name_t code, scope_t scope, const primary_key_t pk) const {
+        return internal_use_do_not_use::chaindb_lower_bound_pk(code, scope, TableName, pk);
+    }
+}; // struct lower_bound
+
+template<eosio::name::raw TableName, eosio::name::raw IndexName> struct upper_bound final {
+    template<typename Key>
+    cursor_t operator()(account_name_t code, scope_t scope, const Key& key) const {
+        cursor_t cursor;
+        safe_allocate(pack_size(key), "Invalid size of key on upper_bound", [&](auto& data, auto& size) {
+            pack_object(key, data, size);
+            cursor = internal_use_do_not_use::chaindb_upper_bound(code, scope, TableName, IndexName, data, size);
+        });
+        return cursor;
+    }
+}; // struct upper_bound
+
+template<eosio::name::raw TableName> struct upper_bound<TableName, "primary"_n> final {
+    cursor_t operator()(account_name_t code, scope_t scope, const primary_key_t pk) const {
+        return internal_use_do_not_use::chaindb_upper_bound_pk(code, scope, TableName, pk);
+    }
+}; // struct upper_bound
+
+template<eosio::name::raw TableName, typename T, typename... Indices>
+class multi_index {
+private:
+    static_assert(sizeof...(Indices) <= 16, "multi_index only supports a maximum of 16 secondary indices");
+
+    constexpr static bool validate_table_name(table_name_t n) {
+        // Limit table names to 12 characters so that
+        // the last character (4 bits) can be used to distinguish between the secondary indices.
+        return (static_cast<uint64_t>(n) & 0x000000000000000FULL) == 0;
+    }
+
+    static_assert(
+        validate_table_name(TableName),
+        "multi_index does not support table names with a length greater than 12");
+
+    using item = multi_index_item<T, multi_index>;
+    using item_ptr = intrusive_ptr<item>;
+    using primary_key_extractor_type = primary_key_extractor;
+
+    template<index_name_t IndexName, typename Extractor>
+    struct iterator_extractor_impl {
+        template<typename Iterator>
+        auto operator()(const Iterator& itr) const {
+            return Extractor()(*itr);
+        }
+    }; // iterator_extractor_impl
+
+    template<typename E>
+    struct iterator_extractor_impl<"primary"_n, E> {
+        template<typename Iterator>
+        const primary_key_t& operator()(const Iterator& itr) const {
+            return itr.primary_key_;
+        }
+    }; // iterator_extractor_impl
+
+    template<index_name_t IndexName, typename Extractor> struct index;
+
+    const account_name_t code_;
+    const scope_t scope_;
+
+    mutable primary_key_t next_primary_key_ = end_primary_key;
+
+    struct cache_map_t_ {
+        std::vector<item_ptr> vector;
+        std::map<primary_key_t, item_ptr> map;
+
+        item_ptr find(const primary_key_t pk) {
+            auto mtr = map.find(pk);
+            if (map.end() != mtr) {
+                return mtr->second;
             }
 
-            static_assert( validate_index_name( name(IndexName) ), "invalid index name used in multi_index" );
-
-            enum constants {
-               table_name   = static_cast<uint64_t>(TableName),
-               index_name   = static_cast<uint64_t>(IndexName),
-               index_number = Number,
-               index_table_name = (static_cast<uint64_t>(TableName) & 0xFFFFFFFFFFFFFFF0ULL)
-                                    | (Number & 0x000000000000000FULL) // Assuming no more than 16 secondary indices are allowed
-            };
-
-            constexpr static uint64_t name()   { return index_table_name; }
-            constexpr static uint64_t number() { return Number; }
-
-            struct const_iterator : public std::iterator<std::bidirectional_iterator_tag, const T> {
-               public:
-                  friend bool operator == ( const const_iterator& a, const const_iterator& b ) {
-                     return a._item == b._item;
-                  }
-                  friend bool operator != ( const const_iterator& a, const const_iterator& b ) {
-                     return a._item != b._item;
-                  }
-
-                  const T& operator*()const { return *static_cast<const T*>(_item); }
-                  const T* operator->()const { return static_cast<const T*>(_item); }
-
-                  const_iterator operator++(int){
-                     const_iterator result(*this);
-                     ++(*this);
-                     return result;
-                  }
-
-                  const_iterator operator--(int){
-                     const_iterator result(*this);
-                     --(*this);
-                     return result;
-                  }
-
-                  const_iterator& operator++() {
-                     using namespace _multi_index_detail;
-
-                     eosio::check( _item != nullptr, "cannot increment end iterator" );
-
-                     if( _item->__iters[Number] == -1 ) {
-                        secondary_key_type temp_secondary_key;
-                        auto idxitr = secondary_index_db_functions<secondary_key_type>::db_idx_find_primary(_idx->get_code().value, _idx->get_scope(), _idx->name(), _item->primary_key(), temp_secondary_key);
-                        auto& mi = const_cast<item&>( *_item );
-                        mi.__iters[Number] = idxitr;
-                     }
-
-                     uint64_t next_pk = 0;
-                     auto next_itr = secondary_index_db_functions<secondary_key_type>::db_idx_next( _item->__iters[Number], &next_pk );
-                     if( next_itr < 0 ) {
-                        _item = nullptr;
-                        return *this;
-                     }
-
-                     const T& obj = *_idx->_multidx->find( next_pk );
-                     auto& mi = const_cast<item&>( static_cast<const item&>(obj) );
-                     mi.__iters[Number] = next_itr;
-                     _item = &mi;
-
-                     return *this;
-                  }
-
-                  const_iterator& operator--() {
-                     using namespace _multi_index_detail;
-
-                     uint64_t prev_pk = 0;
-                     int32_t  prev_itr = -1;
-
-                     if( !_item ) {
-                        auto ei = secondary_index_db_functions<secondary_key_type>::db_idx_end(_idx->get_code().value, _idx->get_scope(), _idx->name());
-                        eosio::check( ei != -1, "cannot decrement end iterator when the index is empty" );
-                        prev_itr = secondary_index_db_functions<secondary_key_type>::db_idx_previous( ei , &prev_pk );
-                        eosio::check( prev_itr >= 0, "cannot decrement end iterator when the index is empty" );
-                     } else {
-                        if( _item->__iters[Number] == -1 ) {
-                           secondary_key_type temp_secondary_key;
-                           auto idxitr = secondary_index_db_functions<secondary_key_type>::db_idx_find_primary(_idx->get_code().value, _idx->get_scope(), _idx->name(), _item->primary_key(), temp_secondary_key);
-                           auto& mi = const_cast<item&>( *_item );
-                           mi.__iters[Number] = idxitr;
-                        }
-                        prev_itr = secondary_index_db_functions<secondary_key_type>::db_idx_previous( _item->__iters[Number], &prev_pk );
-                        eosio::check( prev_itr >= 0, "cannot decrement iterator at beginning of index" );
-                     }
-
-                     const T& obj = *_idx->_multidx->find( prev_pk );
-                     auto& mi = const_cast<item&>( static_cast<const item&>(obj) );
-                     mi.__iters[Number] = prev_itr;
-                     _item = &mi;
-
-                     return *this;
-                  }
-
-                  const_iterator():_item(nullptr){}
-               private:
-                  friend struct index;
-                  const_iterator( const index* idx, const item* i = nullptr )
-                  : _idx(idx), _item(i) {}
-
-                  const index* _idx;
-                  const item*  _item;
-            }; /// struct multi_index::index::const_iterator
-
-            typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
-            const_iterator cbegin()const {
-               using namespace _multi_index_detail;
-               return lower_bound( secondary_key_traits<secondary_key_type>::true_lowest() );
-            }
-            const_iterator begin()const  { return cbegin(); }
-
-            const_iterator cend()const   { return const_iterator( this ); }
-            const_iterator end()const    { return cend(); }
-
-            const_reverse_iterator crbegin()const { return std::make_reverse_iterator(cend()); }
-            const_reverse_iterator rbegin()const  { return crbegin(); }
-
-            const_reverse_iterator crend()const   { return std::make_reverse_iterator(cbegin()); }
-            const_reverse_iterator rend()const    { return crend(); }
-
-            const_iterator find( secondary_key_type&& secondary )const {
-               return find( secondary );
-            }
-
-            const_iterator find( const secondary_key_type& secondary )const {
-               auto lb = lower_bound( secondary );
-               auto e = cend();
-               if( lb == e ) return e;
-
-               if( secondary != secondary_extractor_type()(*lb) )
-                  return e;
-               return lb;
-            }
-
-            const_iterator require_find( secondary_key_type&& secondary, const char* error_msg = "unable to find secondary key" )const {
-               return require_find( secondary, error_msg );
-            }
-
-            const_iterator require_find( const secondary_key_type& secondary, const char* error_msg = "unable to find secondary key" )const {
-               auto lb = lower_bound( secondary );
-               eosio::check( lb != cend(), error_msg );
-               eosio::check( secondary == secondary_extractor_type()(*lb), error_msg );
-               return lb;
-            }
-
-            const T& get( secondary_key_type&& secondary, const char* error_msg = "unable to find secondary key" )const {
-               return get( secondary, error_msg );
-            }
-
-            // Gets the object with the smallest primary key in the case where the secondary key is not unique.
-            const T& get( const secondary_key_type& secondary, const char* error_msg = "unable to find secondary key" )const {
-               auto result = find( secondary );
-               eosio::check( result != cend(), error_msg );
-               return *result;
-            }
-
-            const_iterator lower_bound( secondary_key_type&& secondary )const {
-               return lower_bound( secondary );
-            }
-            const_iterator lower_bound( const secondary_key_type& secondary )const {
-               using namespace _multi_index_detail;
-
-               uint64_t primary = 0;
-               secondary_key_type secondary_copy(secondary);
-               auto itr = secondary_index_db_functions<secondary_key_type>::db_idx_lowerbound( get_code().value, get_scope(), name(), secondary_copy, primary );
-               if( itr < 0 ) return cend();
-
-               const T& obj = *_multidx->find( primary );
-               auto& mi = const_cast<item&>( static_cast<const item&>(obj) );
-               mi.__iters[Number] = itr;
-
-               return {this, &mi};
-            }
-
-            const_iterator upper_bound( secondary_key_type&& secondary )const {
-               return upper_bound( secondary );
-            }
-            const_iterator upper_bound( const secondary_key_type& secondary )const {
-               using namespace _multi_index_detail;
-
-               uint64_t primary = 0;
-               secondary_key_type secondary_copy(secondary);
-               auto itr = secondary_index_db_functions<secondary_key_type>::db_idx_upperbound( get_code().value, get_scope(), name(), secondary_copy, primary );
-               if( itr < 0 ) return cend();
-
-               const T& obj = *_multidx->find( primary );
-               auto& mi = const_cast<item&>( static_cast<const item&>(obj) );
-               mi.__iters[Number] = itr;
-
-               return {this, &mi};
-            }
-
-            const_iterator iterator_to( const T& obj ) {
-               using namespace _multi_index_detail;
-
-               const auto& objitem = static_cast<const item&>(obj);
-               eosio::check( objitem.__idx == _multidx, "object passed to iterator_to is not in multi_index" );
-
-               if( objitem.__iters[Number] == -1 ) {
-                  secondary_key_type temp_secondary_key;
-                  auto idxitr = secondary_index_db_functions<secondary_key_type>::db_idx_find_primary(get_code().value, get_scope(), name(), objitem.primary_key(), temp_secondary_key);
-                  auto& mi = const_cast<item&>( objitem );
-                  mi.__iters[Number] = idxitr;
-               }
-
-               return {this, &objitem};
-            }
-
-            template<typename Lambda>
-            void modify( const_iterator itr, eosio::name payer, Lambda&& updater ) {
-               eosio::check( itr != cend(), "cannot pass end iterator to modify" );
-
-               _multidx->modify( *itr, payer, std::forward<Lambda&&>(updater) );
-            }
-
-            const_iterator erase( const_iterator itr ) {
-               eosio::check( itr != cend(), "cannot pass end iterator to erase" );
-
-               const auto& obj = *itr;
-               ++itr;
-
-               _multidx->erase(obj);
-
-               return itr;
-            }
-
-            eosio::name get_code()const  { return _multidx->get_code(); }
-            uint64_t    get_scope()const { return _multidx->get_scope(); }
-
-            static auto extract_secondary_key(const T& obj) { return secondary_extractor_type()(obj); }
-
-         private:
-            friend class multi_index;
-
-            index( typename std::conditional<IsConst, const multi_index*, multi_index*>::type midx )
-            :_multidx(midx){}
-
-            typename std::conditional<IsConst, const multi_index*, multi_index*>::type _multidx;
-      }; /// struct multi_index::index
-
-      template<uint64_t I>
-      struct intc { enum e{ value = I }; operator uint64_t()const{ return I; }  };
-
-      static constexpr auto transform_indices( ) {
-         using namespace _multi_index_detail;
-
-         typedef decltype( hana::zip_shortest(
-                             hana::make_tuple( intc<0>(), intc<1>(), intc<2>(), intc<3>(), intc<4>(), intc<5>(),
-                                               intc<6>(), intc<7>(), intc<8>(), intc<9>(), intc<10>(), intc<11>(),
-                                               intc<12>(), intc<13>(), intc<14>(), intc<15>() ),
-                             hana::tuple<Indices...>() ) ) indices_input_type;
-
-         return hana::transform( indices_input_type(), [&]( auto&& idx ){
-             typedef typename std::decay<decltype(hana::at_c<0>(idx))>::type num_type;
-             typedef typename std::decay<decltype(hana::at_c<1>(idx))>::type idx_type;
-             return hana::make_tuple( hana::type_c<index<eosio::name::raw(static_cast<uint64_t>(idx_type::index_name)),
-                                                         typename idx_type::secondary_extractor_type,
-                                                         num_type::e::value, false> >,
-                                      hana::type_c<index<eosio::name::raw(static_cast<uint64_t>(idx_type::index_name)),
-                                                         typename idx_type::secondary_extractor_type,
-                                                         num_type::e::value, true> > );
-
-         });
-      }
-
-      typedef decltype( multi_index::transform_indices() ) indices_type;
-
-      indices_type _indices;
-
-      const item& load_object_by_primary_iterator( int32_t itr )const {
-         using namespace _multi_index_detail;
-
-         auto itr2 = std::find_if(_items_vector.rbegin(), _items_vector.rend(), [&](const item_ptr& ptr) {
-            return ptr._primary_itr == itr;
-         });
-         if( itr2 != _items_vector.rend() )
-            return *itr2->_item;
-
-         auto size = internal_use_do_not_use::db_get_i64( itr, nullptr, 0 );
-         eosio::check( size >= 0, "error reading iterator" );
-
-         //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
-         void* buffer = max_stack_buffer_size < size_t(size) ? malloc(size_t(size)) : alloca(size_t(size));
-
-         internal_use_do_not_use::db_get_i64( itr, buffer, uint32_t(size) );
-
-         datastream<const char*> ds( (char*)buffer, uint32_t(size) );
-
-         auto itm = std::make_unique<item>( this, [&]( auto& i ) {
-            T& val = static_cast<T&>(i);
-            ds >> val;
-
-            i.__primary_itr = itr;
-            hana::for_each( _indices, [&]( auto& idx ) {
-               typedef typename decltype(+hana::at_c<1>(idx))::type index_type;
-
-               i.__iters[ index_type::number() ] = -1;
+            auto vtr = std::find_if(vector.rbegin(), vector.rend(), [&pk](const auto& itm) {
+                return primary_key_extractor_type()(*itm) == pk;
             });
-         });
+            if (vector.rend() != vtr) {
+                return (*vtr);
+            }
+            return item_ptr();
+        }
 
-         const item* ptr = itm.get();
-         auto pk   = itm->primary_key();
-         auto pitr = itm->__primary_itr;
+        void insert(item_ptr ptr) {
+            if (vector.size() >= 8) {
+                map.emplace(primary_key_extractor_type()(*ptr), ptr);
+            } else {
+                vector.push_back(ptr);
+            }
+        }
 
-         _items_vector.emplace_back( std::move(itm), pk, pitr );
+        void remove(primary_key_t pk) {
+            auto mtr = map.find(pk);
+            if (map.end() != mtr) {
+                mtr->second->deleted_ = true;
+                map.erase(mtr);
+                return;
+            }
 
-         if ( max_stack_buffer_size < size_t(size) ) {
-            free(buffer);
-         }
+            auto vtr = std::find_if(vector.rbegin(), vector.rend(), [&pk](const auto& itm) {
+                return primary_key_extractor_type()(*itm) == pk;
+            });
+            if (vector.rend() != vtr) {
+                (*vtr)->deleted_ = true;
+                vector.erase(--(vtr.base()));
+            }
+        }
 
-         return *ptr;
-      } /// load_object_by_primary_iterator
+        void clear() {
+            for (auto& itm_ptr: vector) {
+                itm_ptr->deleted_ = true;
+            }
+            vector.clear();
 
-   public:
-      /**
-       *  Constructs an instance of a Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @param code - Account that owns table
-       *  @param scope - Scope identifier within the code hierarchy
-       *
-       *  @pre code and scope member properties are initialized
-       *  @post each secondary index table initialized
-       *  @post Secondary indices are updated to refer to the newly added object. If the secondary index tables do not exist, they are created.
-       *  @post The payer is charged for the storage usage of the new object and, if the table (and secondary index tables) must be created, for the overhead of the table creation.
-       *
-       *  Notes
-       *  The `eosio::multi_index` template has template parameters `<name::raw TableName, typename T, typename... Indices>`, where:
-       *  - `TableName` is the name of the table, maximum 12 characters long, characters in the name from the set of lowercase letters, digits 1 to 5, and the "." (period) character and is converted to a eosio::raw - which wraps uint64_t;
-       *  - `T` is the object type (i.e., row definition);
-       *  - `Indices` is a list of up to 16 secondary indices.
-       *  - Each must be a default constructable class or struct
-       *  - Each must have a function call operator that takes a const reference to the table object type and returns either a secondary key type or a reference to a secondary key type
-       *  - It is recommended to use the eosio::const_mem_fun template, which is a type alias to the boost::multi_index::const_mem_fun.  See the documentation for the Boost const_mem_fun key extractor for more details.
-       *
-       *  Example:
-       *
-       *  @code
-       *  #include <eosiolib/eosio.hpp>
-       *  using namespace eosio;
-       *  using namespace std;
-       *  class addressbook: contract {
-       *    struct address {
-       *       uint64_t account_name;
-       *       string first_name;
-       *       string last_name;
-       *       string street;
-       *       string city;
-       *       string state;
-       *       uint64_t primary_key() const { return account_name; }
-       *    };
-       *    public:
-       *      addressbook(name self):contract(self) {}
-       *      typedef eosio::multi_index< "address"_n, address > address_index;
-       *      void myaction() {
-       *        address_index addresses(_self, _self.value); // code, scope
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      multi_index( name code, uint64_t scope )
-      :_code(code),_scope(scope),_next_primary_key(unset_next_primary_key)
-      {}
+            for (auto& itr: map) {
+                itr->second->deleted_ = true;
+            }
+            map.clear();
+        }
+    }; // struct cache_map_t_
 
-      /**
-       *  Returns the `code` member property.
-       *  @ingroup multiindex
-       *
-       *  @return Account name of the Code that owns the Primary Table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        address_index addresses("dan"_n, "dan"_n); // code, scope
-       *        eosio::check(addresses.get_code() == "dan"_n, "Codes don't match.");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      name get_code()const      { return _code; }
+    using cache_vector_t_ = std::vector<item_ptr>;
+    struct cache_item_t_ {
+        const account_name_t code;
+        const scope_t scope;
+        cache_map_t_ items_map;
 
-      /**
-       *  Returns the `scope` member property.
-       *  @ingroup multiindex
-       *
-       *  @return Scope id of the Scope within the Code of the Current Receiver under which the desired Primary Table instance can be found.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        address_index addresses("dan"_n, "dan"_n); // code, scope
-       *        eosio::check(addresses.get_code() == "dan"_n, "Scopes don't match");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      uint64_t get_scope()const { return _scope; }
+        cache_item_t_(const account_name_t code, const scope_t scope)
+        : code(code), scope(scope) {
+        }
+    };
 
-      struct const_iterator : public std::iterator<std::bidirectional_iterator_tag, const T> {
-         friend bool operator == ( const const_iterator& a, const const_iterator& b ) {
-            return a._item == b._item;
-         }
-         friend bool operator != ( const const_iterator& a, const const_iterator& b ) {
-            return a._item != b._item;
-         }
+    static cache_map_t_& get_items_map(const account_name_t code, const scope_t scope) {
+        static std::deque<cache_item_t_> cache_map;
+        for (auto& itm: cache_map) {
+            if (itm.code == code && itm.scope == scope) return itm.items_map;
+        }
+        cache_map.push_back({code, scope});
+        return cache_map.back().items_map;
+    }
 
-         const T& operator*()const { return *static_cast<const T*>(_item); }
-         const T* operator->()const { return static_cast<const T*>(_item); }
+    cache_map_t_& items_map_;
 
-         const_iterator operator++(int) {
-            const_iterator result(*this);
+    template<index_name_t IndexName>
+    struct const_iterator_impl: public std::iterator<std::bidirectional_iterator_tag, const T> {
+    public:
+        friend bool operator == (const const_iterator_impl& a, const const_iterator_impl& b) {
+            if (a.cursor_ != uninitialized_find_by_pk && a.cursor_ == b.cursor_) return true;
+            a.lazy_open();
+            b.lazy_open();
+            return a.primary_key_ == b.primary_key_;
+        }
+        friend bool operator != (const const_iterator_impl& a, const const_iterator_impl& b) {
+            return !(operator == (a, b));
+        }
+
+        constexpr static table_name_t table_name() { return TableName; }
+        constexpr static index_name_t index_name() { return IndexName; }
+        account_name_t get_code() const            { return multidx_->get_code(); }
+        scope_t        get_scope() const           { return multidx_->get_scope(); }
+
+        const T& operator*() const {
+            lazy_load_object();
+            return *static_cast<const T*>(item_.get());
+        }
+        const T* operator->() const {
+            lazy_load_object();
+            return static_cast<const T*>(item_.get());
+        }
+        primary_key_t pk() const {
+            lazy_open();
+            return primary_key_;
+        }
+        int size() const {
+            lazy_load_object();
+            return item_->service_.size;
+        }
+        const eosio::name& payer() const {
+            lazy_load_object();
+            return item_->service_.payer;
+        }
+        bool in_ram() const {
+            lazy_load_object();
+            return item_->service_.in_ram;
+        }
+
+        const_iterator_impl operator++(int) {
+            const_iterator_impl result(*this);
             ++(*this);
             return result;
-         }
+        }
+        const_iterator_impl& operator++() {
+            lazy_open();
+            chaindb_assert(primary_key_ != end_primary_key, "cannot increment end iterator");
+            primary_key_ = internal_use_do_not_use::chaindb_next(get_code(), cursor_);
+            item_.reset();
+            return *this;
+        }
 
-         const_iterator operator--(int) {
-            const_iterator result(*this);
+        const_iterator_impl operator--(int) {
+            const_iterator_impl result(*this);
             --(*this);
             return result;
-         }
-
-         const_iterator& operator++() {
-            eosio::check( _item != nullptr, "cannot increment end iterator" );
-
-            uint64_t next_pk;
-            auto next_itr = internal_use_do_not_use::db_next_i64( _item->__primary_itr, &next_pk );
-            if( next_itr < 0 )
-               _item = nullptr;
-            else
-               _item = &_multidx->load_object_by_primary_iterator( next_itr );
+        }
+        const_iterator_impl& operator--() {
+            lazy_open();
+            primary_key_ = internal_use_do_not_use::chaindb_prev(get_code(), cursor_);
+            item_.reset();
+            chaindb_assert(primary_key_ != end_primary_key, "out of range on decrement of iterator");
             return *this;
-         }
-         const_iterator& operator--() {
-            uint64_t prev_pk;
-            int32_t  prev_itr = -1;
+        }
 
-            if( !_item ) {
-               auto ei = internal_use_do_not_use::db_end_i64(_multidx->get_code().value, _multidx->get_scope(), static_cast<uint64_t>(TableName));
-               eosio::check( ei != -1, "cannot decrement end iterator when the table is empty" );
-               prev_itr = internal_use_do_not_use::db_previous_i64( ei , &prev_pk );
-               eosio::check( prev_itr >= 0, "cannot decrement end iterator when the table is empty" );
-            } else {
-               prev_itr = internal_use_do_not_use::db_previous_i64( _item->__primary_itr, &prev_pk );
-               eosio::check( prev_itr >= 0, "cannot decrement iterator at beginning of table" );
-            }
+        const_iterator_impl() = default;
 
-            _item = &_multidx->load_object_by_primary_iterator( prev_itr );
+        const_iterator_impl(const_iterator_impl&& src) {
+            this->operator=(std::move(src));
+        }
+        const_iterator_impl& operator=(const_iterator_impl&& src) {
+            if (this == &src) return *this;
+
+            multidx_ = src.multidx_;
+            cursor_ = src.cursor_;
+            primary_key_ = src.primary_key_;
+            item_ = src.item_;
+
+            src.cursor_ = uninitialized_state;
+            src.primary_key_ = end_primary_key;
+            src.item_.reset();
+
             return *this;
-         }
+        }
 
-         private:
-            const_iterator( const multi_index* mi, const item* i = nullptr )
-            :_multidx(mi),_item(i){}
+        const_iterator_impl(const const_iterator_impl& src) {
+            this->operator=(src);
+        }
+        const_iterator_impl& operator=(const const_iterator_impl& src) {
+            if (this == &src) return *this;
 
-            const multi_index* _multidx;
-            const item*        _item;
-            friend class multi_index;
-      }; /// struct multi_index::const_iterator
+            multidx_ = src.multidx_;
 
-      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
-      /**
-       *  Returns an iterator pointing to the object_type with the lowest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the object_type with the lowest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr == addresses.cbegin(), "Only address is not at front.");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator cbegin()const {
-         return lower_bound(std::numeric_limits<uint64_t>::lowest());
-      }
-
-      /**
-       *  Returns an iterator pointing to the object_type with the lowest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the object_type with the lowest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr == addresses.begin(), "Only address is not at front.");
-       *      }
-       *  }
-       *  EOSIO_ABI( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator begin()const  { return cbegin(); }
-
-      /**
-       *  Returns an iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.cend(), "Address for account doesn't exist");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator cend()const   { return const_iterator( this ); }
-
-      /**
-       *  Returns an iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Address for account doesn't exist");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator end()const    { return cend(); }
-
-      /**
-       *  Returns a reverse iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return A reverse iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *        });
-       *        auto itr = addresses.crbegin();
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Last Record ");
-       *        itr++;
-       *        eosio::check(itr->account_name == name("brendan"), "Lock arf, Incorrect Second Last Record");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_reverse_iterator crbegin()const { return std::make_reverse_iterator(cend()); }
-
-      /**
-       *  Returns a reverse iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return A reverse iterator pointing to the `object_type` with the highest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *        });
-       *        auto itr = addresses.rbegin();
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Last Record ");
-       *        itr++;
-       *        eosio::check(itr->account_name == name("brendan"), "Lock arf, Incorrect Second Last Record");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_reverse_iterator rbegin()const  { return crbegin(); }
-
-      /**
-       *  Returns an iterator pointing to the `object_type` with the lowest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the `object_type` with the lowest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *        });
-       *        auto itr = addresses.crend();
-       *        itr--;
-       *        eosio::check(itr->account_name == name("brendan"), "Lock arf, Incorrect First Record ");
-       *        itr--;
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Second Record");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_reverse_iterator crend()const   { return std::make_reverse_iterator(cbegin()); }
-
-      /**
-       *  Returns an iterator pointing to the `object_type` with the lowest primary key value in the Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @return An iterator pointing to the `object_type` with the lowest primary key value in the Multi-Index table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *        });
-       *        auto itr = addresses.rend();
-       *        itr--;
-       *        eosio::check(itr->account_name == name("brendan"), "Lock arf, Incorrect First Record ");
-       *        itr--;
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Second Record");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_reverse_iterator rend()const    { return crend(); }
-
-      /**
-       *  Searches for the `object_type` with the lowest primary key that is greater than or equal to a given primary key.
-       *  @ingroup multiindex
-       *
-       *  @param primary - Primary key that establishes the target value for the lower bound search.
-       *  @return An iterator pointing to the `object_type` that has the lowest primary key that is greater than or equal to `primary`. If an object could not be found, it will return the `end` iterator. If the table does not exist** it will return `-1`.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the get_index() example below. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *          address.zip = 93445;
-       *        });
-       *        uint32_t zipnumb = 93445;
-       *        auto zip_index = addresses.get_index<name("zip")>();
-       *        auto itr = zip_index.lower_bound(zipnumb);
-       *        eosio::check(itr->account_name == name("brendan"), "Lock arf, Incorrect First Lower Bound Record ");
-       *        itr++;
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Second Lower Bound Record");
-       *        itr++;
-       *        eosio::check(itr == zip_index.end(), "Lock arf, Incorrect End of Iterator");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator lower_bound( uint64_t primary )const {
-         auto itr = internal_use_do_not_use::db_lowerbound_i64( _code.value, _scope, static_cast<uint64_t>(TableName), primary );
-         if( itr < 0 ) return end();
-         const auto& obj = load_object_by_primary_iterator( itr );
-         return {this, &obj};
-      }
-
-      /**
-       *  Searches for the `object_type` with the highest primary key that is less than or equal to a given primary key.
-       *  @ingroup multiindex
-       *
-       *  @param primary - Primary key that establishes the target value for the upper bound search
-       *  @return An iterator pointing to the `object_type` that has the highest primary key that is less than or equal to `primary`. If an object could not be found, it will return the `end` iterator. If the table does not exist** it will return `-1`.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the get_index() example below. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *          address.zip = 93445;
-       *        });
-       *        uint32_t zipnumb = 93445;
-       *        auto zip_index = addresses.get_index<name("zip")>();
-       *        auto itr = zip_index.upper_bound(zipnumb);
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect First Upper Bound Record ");
-       *        itr++;
-       *        eosio::check(itr == zip_index.end(), "Lock arf, Incorrect End of Iterator");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator upper_bound( uint64_t primary )const {
-         auto itr = internal_use_do_not_use::db_upperbound_i64( _code.value, _scope, static_cast<uint64_t>(TableName), primary );
-         if( itr < 0 ) return end();
-         const auto& obj = load_object_by_primary_iterator( itr );
-         return {this, &obj};
-      }
-
-      /**
-       *  Returns an available primary key.
-       *  @ingroup multiindex
-       *
-       *  @return An available (unused) primary key value.
-       *
-       *  Notes:
-       *  Intended to be used in tables in which the primary keys of the table are strictly intended to be auto-incrementing, and thus will never be set to custom values by the contract.  Violating this expectation could result in the table appearing to be full due to inability to allocate an available primary key.
-       *  Ideally this method would only be used to determine the appropriate primary key to use within new objects added to a table in which the primary keys of the table are strictly intended from the beginning to be autoincrementing and thus will not ever be set to custom arbitrary values by the contract. Violating this agreement could result in the table appearing full when in reality there is plenty of space left.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        address_index addresses(_self, _self.value);  // code, scope
-       *        // add to table, first argument is account to bill for storage
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.key = addresses.available_primary_key();
-       *          address.first_name = "Daniel";
-       *          address.last_name = "Larimer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Blacksburg";
-       *          address.state = "VA";
-       *        });
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      uint64_t available_primary_key()const {
-         if( _next_primary_key == unset_next_primary_key ) {
-            // This is the first time available_primary_key() is called for this multi_index instance.
-            if( begin() == end() ) { // empty table
-               _next_primary_key = 0;
+            if (src.is_cursor_initialized()) {
+                cursor_ = internal_use_do_not_use::chaindb_clone(get_code(), src.cursor_);
             } else {
-               auto itr = --end(); // last row of table sorted by primary key
-               auto pk = itr->primary_key(); // largest primary key currently in table
-               if( pk >= no_available_primary_key ) // Reserve the tags
-                  _next_primary_key = no_available_primary_key;
-               else
-                  _next_primary_key = pk + 1;
-            }
-         }
-
-         eosio::check( _next_primary_key < no_available_primary_key, "next primary key in table is at autoincrement limit");
-         return _next_primary_key;
-      }
-
-      /**
-       *  Returns an appropriately typed Secondary Index.
-       *  @ingroup multiindex
-       *
-       *  @tparam IndexName - the ID of the desired secondary index
-       *
-       *  @return An index of the appropriate type: Primitive 64-bit unsigned integer key (idx64), Primitive 128-bit unsigned integer key (idx128), 128-bit fixed-size lexicographical key (idx128), 256-bit fixed-size lexicographical key (idx256), Floating point key, Double precision floating point key, Long Double (quadruple) precision floating point key
-       *
-       *  Example:
-       *
-       *  @code
-       *  #include <eosiolib/eosio.hpp>
-       *  using namespace eosio;
-       *  using namespace std;
-       *  class addressbook: contract {
-       *    struct address {
-       *       uint64_t account_name;
-       *       string first_name;
-       *       string last_name;
-       *       string street;
-       *       string city;
-       *       string state;
-       *       uint32_t zip = 0;
-       *       uint64_t primary_key() const { return account_name; }
-       *       uint64_t by_zip() const { return zip; }
-       *    };
-       *    public:
-       *      addressbook(name receiver, name code, datastream<const char*> ds):contract(receiver, code, ds) {}
-       *      typedef eosio::multi_index< name("address"), address, indexed_by< name("zip"), const_mem_fun<address, uint64_t, &address::by_zip> > address_index;
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        uint32_t zipnumb = 93446;
-       *        auto zip_index = addresses.get_index<name("zip")>();
-       *        auto itr = zip_index.find(zipnumb);
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect Record ");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      template<name::raw IndexName>
-      auto get_index() {
-         using namespace _multi_index_detail;
-
-         auto res = hana::find_if( _indices, []( auto&& in ) {
-            return std::integral_constant<bool, static_cast<uint64_t>(std::decay<typename decltype(+hana::at_c<0>(in))::type>::type::index_name) == static_cast<uint64_t>(IndexName)>();
-         });
-
-         static_assert( res != hana::nothing, "name provided is not the name of any secondary index within multi_index" );
-
-         return typename decltype(+hana::at_c<0>(res.value()))::type(this);
-      }
-
-      /**
-       *  Returns an appropriately typed Secondary Index.
-       *  @ingroup multiindex
-       *
-       *  @tparam IndexName - the ID of the desired secondary index
-       *
-       *  @return An index of the appropriate type: Primitive 64-bit unsigned integer key (idx64), Primitive 128-bit unsigned integer key (idx128), 128-bit fixed-size lexicographical key (idx128), 256-bit fixed-size lexicographical key (idx256), Floating point key, Double precision floating point key, Long Double (quadruple) precision floating point key
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the get_index() example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *          address.zip = 93445;
-       *        });
-       *        uint32_t zipnumb = 93445;
-       *        auto zip_index = addresses.get_index<name("zip")>();
-       *        auto itr = zip_index.upper_bound(zipnumb);
-       *        eosio::check(itr->account_name == name("dan"), "Lock arf, Incorrect First Upper Bound Record ");
-       *        itr++;
-       *        eosio::check(itr == zip_index.end(), "Lock arf, Incorrect End of Iterator");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      template<name::raw IndexName>
-      auto get_index()const {
-         using namespace _multi_index_detail;
-
-         auto res = hana::find_if( _indices, []( auto&& in ) {
-            return std::integral_constant<bool, static_cast<uint64_t>(std::decay<typename decltype(+hana::at_c<1>(in))::type>::type::index_name) == static_cast<uint64_t>(IndexName)>();
-         });
-
-         static_assert( res != hana::nothing, "name provided is not the name of any secondary index within multi_index" );
-
-         return typename decltype(+hana::at_c<1>(res.value()))::type(this);
-      }
-
-      /**
-       *  Returns an iterator to the given object in a Multi-Index table.
-       *  @ingroup multiindex
-       *
-       *  @param obj - A reference to the desired object
-       *
-       *  @return An iterator to the given object
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the get_index() example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example below
-       *        // add dan account to table           - see emplace example below
-       *        // add additional account - brendan
-       *
-       *        addresses.emplace(payer, [&](auto& address) {
-       *          address.account_name = "brendan"_n;
-       *          address.first_name = "Brendan";
-       *          address.last_name = "Blumer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Hong Kong";
-       *          address.state = "HK";
-       *          address.zip = 93445;
-       *        });
-       *        auto user = addresses.get("dan"_n);
-       *        auto itr = address.find("dan"_n);
-       *        eosio::check(iterator_to(user) == itr, "Invalid iterator");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator iterator_to( const T& obj )const {
-         const auto& objitem = static_cast<const item&>(obj);
-         eosio::check( objitem.__idx == this, "object passed to iterator_to is not in multi_index" );
-         return {this, &objitem};
-      }
-      /**
-       *  Adds a new object (i.e., row) to the table.
-       *  @ingroup multiindex
-       *
-       *  @param payer - Account name of the payer for the Storage usage of the new object
-       *  @param constructor - Lambda function that does an in-place initialization of the object to be created in the table
-       *
-       *  @pre A multi index table has been instantiated
-       *  @post A new object is created in the Multi-Index table, with a unique primary key (as specified in the object).  The object is serialized and written to the table. If the table does not exist, it is created.
-       *  @post Secondary indices are updated to refer to the newly added object. If the secondary index tables do not exist, they are created.
-       *  @post The payer is charged for the storage usage of the new object and, if the table (and secondary index tables) must be created, for the overhead of the table creation.
-       *
-       *  @return A primary key iterator to the newly created object
-       *
-       *  Exception - The account is not authorized to write to the table.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        address_index addresses(_self, _self.value); // code, scope
-       *        // add to table, first argument is account to bill for storage
-       *        addresses.emplace(_self, [&](auto& address) {
-       *          address.account_name = "dan"_n;
-       *          address.first_name = "Daniel";
-       *          address.last_name = "Larimer";
-       *          address.street = "1 EOS Way";
-       *          address.city = "Blacksburg";
-       *          address.state = "VA";
-       *        });
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      template<typename Lambda>
-      const_iterator emplace( name payer, Lambda&& constructor ) {
-         using namespace _multi_index_detail;
-
-         eosio::check( _code == current_receiver(), "cannot create objects in table of another contract" ); // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
-
-         auto itm = std::make_unique<item>( this, [&]( auto& i ){
-            T& obj = static_cast<T&>(i);
-            constructor( obj );
-
-            size_t size = pack_size( obj );
-
-            //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
-            void* buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size);
-
-            datastream<char*> ds( (char*)buffer, size );
-            ds << obj;
-
-            auto pk = obj.primary_key();
-
-            i.__primary_itr = internal_use_do_not_use::db_store_i64( _scope, static_cast<uint64_t>(TableName), payer.value, pk, buffer, size );
-
-            if ( max_stack_buffer_size < size ) {
-               free(buffer);
+                cursor_ = src.cursor_;
             }
 
-            if( pk >= _next_primary_key )
-               _next_primary_key = (pk >= no_available_primary_key) ? no_available_primary_key : (pk + 1);
+            primary_key_ = src.primary_key_;
+            item_ = src.item_;
 
-            hana::for_each( _indices, [&]( auto& idx ) {
-               typedef typename decltype(+hana::at_c<0>(idx))::type index_type;
+            return *this;
+        }
 
-               i.__iters[index_type::number()] = secondary_index_db_functions<typename index_type::secondary_key_type>::db_idx_store( _scope, index_type::name(), payer.value, obj.primary_key(), index_type::extract_secondary_key(obj) );
+        ~const_iterator_impl() {
+            if (is_cursor_initialized()) internal_use_do_not_use::chaindb_close(get_code(), cursor_);
+        }
+
+    private:
+        friend multi_index;
+        template<index_name_t, typename> friend struct iterator_extractor_impl;
+
+        const_iterator_impl(const multi_index* midx, const cursor_t cursor)
+        : multidx_(midx), cursor_(cursor) {
+            if (is_cursor_initialized()) {
+                primary_key_ = internal_use_do_not_use::chaindb_current(get_code(), cursor_);
+            }
+        }
+
+        const_iterator_impl(const multi_index* midx, const cursor_t cursor, const primary_key_t pk, item_ptr item)
+        : multidx_(midx), cursor_(cursor), primary_key_(pk), item_(item) { }
+
+        const multi_index* multidx_ = nullptr;
+        mutable cursor_t cursor_ = uninitialized_state;
+        mutable primary_key_t primary_key_ = end_primary_key;
+        mutable item_ptr item_;
+
+        void lazy_load_object() const {
+            if (item_ && !item_->deleted_) return;
+
+            lazy_open();
+            chaindb_assert(primary_key_ != end_primary_key, "cannot load object from end iterator");
+            item_ = multidx_->load_object(cursor_, primary_key_);
+        }
+
+        void lazy_open() const {
+            if (is_cursor_initialized()) return;
+
+            switch (cursor_) {
+                case uninitialized_begin:
+                    lazy_open_begin();
+                    break;
+
+                case uninitialized_end:
+                    lazy_open_end();
+                    break;
+
+                case uninitialized_find_by_pk:
+                    lazy_open_find_by_pk();
+                    break;
+
+                default:
+                    break;
+            }
+            chaindb_assert(is_cursor_initialized(), "unable to open cursor");
+        }
+
+        bool is_cursor_initialized() const {
+            return cursor_ > uninitialized_state;
+        }
+
+        void lazy_open_begin() const {
+            cursor_ = internal_use_do_not_use::chaindb_begin(get_code(), get_scope(), table_name(), index_name());
+            chaindb_assert(is_cursor_initialized(), "unable to open begin iterator");
+            primary_key_ = internal_use_do_not_use::chaindb_current(get_code(), cursor_);
+        }
+
+        void lazy_open_end() const {
+            cursor_ = internal_use_do_not_use::chaindb_end(get_code(), get_scope(), table_name(), index_name());
+            chaindb_assert(is_cursor_initialized(), "unable to open end iterator");
+        }
+
+        void lazy_open_find_by_pk() const {
+            cursor_ = internal_use_do_not_use::chaindb_lower_bound_pk(get_code(), get_scope(), table_name(), primary_key_);
+            chaindb_assert(is_cursor_initialized(), "unable to open find_by_pk iterator");
+
+            auto pk = internal_use_do_not_use::chaindb_current(get_code(), cursor_);
+            chaindb_assert(primary_key_ == pk, "primary key from cursor does not equal expected");
+        }
+
+    private:
+        static constexpr cursor_t uninitialized_state = 0;
+        static constexpr cursor_t uninitialized_end = -1;
+        static constexpr cursor_t uninitialized_begin = -2;
+        static constexpr cursor_t uninitialized_find_by_pk = -3;
+    }; /// struct multi_index::const_iterator_impl
+
+    template<index_name_t IndexName, typename Extractor>
+    struct index {
+    public:
+        using extractor_type = Extractor;
+        using iterator_extractor_type = iterator_extractor_impl<IndexName, Extractor>;
+        using key_type = typename std::decay<decltype(Extractor()(static_cast<const T&>(*(const T*)nullptr)))>::type;
+        using const_iterator = const_iterator_impl<IndexName>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+        constexpr static bool validate_index_name(index_name_t n) {
+           return static_cast<uint64_t>(n) != 0;
+        }
+
+        static_assert(validate_index_name(IndexName), "invalid index name used in multi_index");
+
+        constexpr static table_name_t table_name() { return TableName; }
+        constexpr static index_name_t index_name() { return IndexName; }
+        account_name_t get_code() const            { return multidx_->get_code(); }
+        scope_t        get_scope() const           { return multidx_->get_scope(); }
+
+        const_iterator cbegin() const {
+            return {multidx_, const_iterator::uninitialized_begin};
+        }
+        const_iterator begin() const  { return cbegin(); }
+
+        const_iterator cend() const {
+            return {multidx_, const_iterator::uninitialized_end};
+        }
+        const_iterator end() const  { return cend(); }
+
+        const_reverse_iterator crbegin() const { return const_reverse_iterator(cend()); }
+        const_reverse_iterator rbegin() const  { return crbegin(); }
+
+        const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
+        const_reverse_iterator rend() const  { return crend(); }
+
+        const_iterator find(key_type&& key) const {
+           return find(key);
+        }
+        template<typename Value>
+        const_iterator find(const Value& value) const {
+            auto key = key_converter<key_type>::convert(value);
+            auto itr = lower_bound(key);
+            auto etr = cend();
+            if (itr == etr) return etr;
+            if (!key_comparator<key_type>::compare_eq(iterator_extractor_type()(itr), value)) return etr;
+            return itr;
+        }
+        const_iterator find(const key_type& key) const {
+           auto itr = lower_bound(key);
+           auto etr = cend();
+           if (itr == etr) return etr;
+           if (key != iterator_extractor_type()(itr)) return etr;
+           return itr;
+        }
+
+        const_iterator require_find(key_type&& key, const char* error_msg = "unable to find key") const {
+            return require_find(key, error_msg);
+        }
+        const_iterator require_find(const key_type& key, const char* error_msg = "unable to find key") const {
+            auto itr = lower_bound(key);
+            chaindb_assert(itr != cend(), error_msg);
+            chaindb_assert(key == iterator_extractor_type()(itr), error_msg);
+            return itr;
+        }
+
+        const T& get(key_type&& key, const char* error_msg = "unable to find key") const {
+            return get(key, error_msg);
+        }
+        const T& get(const key_type& key, const char* error_msg = "unable to find key") const {
+            auto itr = find(key);
+            chaindb_assert(itr != cend(), error_msg);
+            return *itr;
+        }
+
+        const_iterator lower_bound(key_type&& key) const {
+           return lower_bound(key);
+        }
+        const_iterator lower_bound(const key_type& key) const {
+            eosio::lower_bound<TableName, IndexName> finder;
+            auto cursor = finder(get_code(), get_scope(), key);
+            return const_iterator(multidx_, cursor);
+        }
+        template<typename Value>
+        const_iterator lower_bound(const Value& value) const {
+            return lower_bound(key_converter<key_type>::convert(value));
+        }
+
+        const_iterator upper_bound(key_type&& key) const {
+           return upper_bound(key);
+        }
+        const_iterator upper_bound(const key_type& key) const {
+            eosio::upper_bound<TableName, IndexName> finder;
+            auto cursor = finder(get_code(), get_scope(), key);
+            return const_iterator(multidx_, cursor);
+        }
+
+        const_iterator iterator_to(const T& obj) const {
+            const auto& itm = static_cast<const item&>(obj);
+            chaindb_assert(multidx_->is_same_multidx(itm), "object passed to iterator_to is not in multi_index");
+
+            auto key = extractor_type()(itm);
+            auto pk = primary_key_extractor_type()(itm);
+            cursor_t cursor;
+            safe_allocate(pack_size(key), "invalid size of key", [&](auto& data, auto& size) {
+                pack_object(key, data, size);
+                cursor = internal_use_do_not_use::chaindb_locate_to(get_code(), get_scope(), table_name(), index_name(), pk, data, size);
             });
-         });
 
-         const item* ptr = itm.get();
-         auto pk   = itm->primary_key();
-         auto pitr = itm->__primary_itr;
+            return const_iterator(multidx_, cursor, pk, item_ptr(const_cast<item*>(&itm), false));
+        }
 
-         _items_vector.emplace_back( std::move(itm), pk, pitr );
+        template<typename Lambda>
+        void modify(const_iterator itr, account_name_t payer, Lambda&& updater) const {
+            chaindb_assert(itr != cend(), "cannot pass end iterator to modify");
+            multidx_->modify(*itr, payer, std::forward<Lambda&&>(updater));
+        }
 
-         return {this, ptr};
-      }
+        const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
+            chaindb_assert(itr != cend(), "cannot pass end iterator to erase");
+            const auto& obj = *itr;
+            ++itr;
+            multidx_->erase(obj, payer);
+            return itr;
+        }
 
-      /**
-       *  Modifies an existing object in a table.
-       *  @ingroup multiindex
-       *
-       *  @param itr - an iterator pointing to the object to be updated
-       *  @param payer - account name of the payer for the Storage usage of the updated row
-       *  @param updater - lambda function that updates the target object
-       *
-       *  @pre itr points to an existing element
-       *  @pre payer is a valid account that is authorized to execute the action and be billed for storage usage.
-       *
-       *  @post The modified object is serialized, then replaces the existing object in the table.
-       *  @post Secondary indices are updated; the primary key of the updated object is not changed.
-       *  @post The payer is charged for the storage usage of the updated object.
-       *  @post If payer is the same as the existing payer, payer only pays for the usage difference between existing and updated object (and is refunded if this difference is negative).
-       *  @post If payer is different from the existing payer, the existing payer is refunded for the storage usage of the existing object.
-       *
-       *  Exceptions:
-       *  If called with an invalid precondition, execution is aborted.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example
-       *        // add dan account to table           - see emplace example
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Address for account not found");
-       *        addresses.modify( itr, account payer, [&]( auto& address ) {
-       *          address.city = "San Luis Obispo";
-       *          address.state = "CA";
-       *        });
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      template<typename Lambda>
-      void modify( const_iterator itr, name payer, Lambda&& updater ) {
-         eosio::check( itr != end(), "cannot pass end iterator to modify" );
+        static auto extract_key(const T& obj) { return extractor_type()(obj); }
 
-         modify( *itr, payer, std::forward<Lambda&&>(updater) );
-      }
+    private:
+        friend class multi_index;
 
-      /**
-       *  Modifies an existing object in a table.
-       *  @ingroup multiindex
-       *
-       *  @param obj - a reference to the object to be updated
-       *  @param payer - account name of the payer for the Storage usage of the updated row
-       *  @param updater - lambda function that updates the target object
-       *
-       *  @pre obj is an existing object in the table
-       *  @pre payer is a valid account that is authorized to execute the action and be billed for storage usage.
-       *
-       *  @post The modified object is serialized, then replaces the existing object in the table.
-       *  @post Secondary indices are updated; the primary key of the updated object is not changed.
-       *  @post The payer is charged for the storage usage of the updated object.
-       *  @post If payer is the same as the existing payer, payer only pays for the usage difference between existing and updated object (and is refunded if this difference is negative).
-       *  @post If payer is different from the existing payer, the existing payer is refunded for the storage usage of the existing object.
-       *
-       *  Exceptions:
-       *  If called with an invalid precondition, execution is aborted.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example
-       *        // add dan account to table           - see emplace example
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Address for account not found");
-       *        addresses.modify( *itr, payer, [&]( auto& address ) {
-       *          address.city = "San Luis Obispo";
-       *          address.state = "CA";
-       *        });
-       *        eosio::check(itr->city == "San Luis Obispo", "Lock arf, Address not modified");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      template<typename Lambda>
-      void modify( const T& obj, name payer, Lambda&& updater ) {
-         using namespace _multi_index_detail;
+        index(const multi_index* midx)
+        : multidx_(midx) { }
 
-         const auto& objitem = static_cast<const item&>(obj);
-         eosio::check( objitem.__idx == this, "object passed to modify is not in multi_index" );
-         auto& mutableitem = const_cast<item&>(objitem);
-         eosio::check( _code == current_receiver(), "cannot modify objects in table of another contract" ); // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
+        const multi_index* const multidx_;
+    }; /// struct multi_index::index
 
-         auto secondary_keys = hana::transform( _indices, [&]( auto&& idx ) {
-            typedef typename decltype(+hana::at_c<0>(idx))::type index_type;
+    using indices_type = decltype(boost::hana::tuple<Indices...>());
 
-            return index_type::extract_secondary_key( obj );
-         });
+    indices_type indices_;
 
-         auto pk = obj.primary_key();
+    index<"primary"_n, primary_key_extractor> primary_idx_;
 
-         auto& mutableobj = const_cast<T&>(obj); // Do not forget the auto& otherwise it would make a copy and thus not update at all.
-         updater( mutableobj );
+    item_ptr find_object_in_cache(const primary_key_t pk) const {
+        return items_map_.find(pk);
+    }
 
-         eosio::check( pk == obj.primary_key(), "updater cannot change primary key when modifying an object" );
+    void add_object_to_cache(item_ptr ptr) const {
+        items_map_.insert(ptr);
+    }
 
-         size_t size = pack_size( obj );
-         //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
-         void* buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size);
+    void remove_object_from_cache(const primary_key_t pk) const {
+        items_map_.remove(pk);
+    }
 
-         datastream<char*> ds( (char*)buffer, size );
-         ds << obj;
+    item_ptr load_object(const cursor_t cursor, const primary_key_t pk) const {
+        auto ptr = find_object_in_cache(pk);
+        if (ptr) return ptr;
 
-         internal_use_do_not_use::db_update_i64( objitem.__primary_itr, payer.value, buffer, size );
+        auto size = internal_use_do_not_use::chaindb_datasize(get_code(), cursor);
 
-         if ( max_stack_buffer_size < size ) {
-            free( buffer );
-         }
+        safe_allocate(size, "object doesn't exist", [&](auto& data, auto& datasize) {
+            auto dpk = internal_use_do_not_use::chaindb_data(get_code(), cursor, data, datasize);
+            chaindb_assert(dpk == pk, "invalid packet object");
+            ptr = item_ptr(new item(*this, [&](auto& itm) {
+                T& obj = static_cast<T&>(itm);
+                unpack_object(obj, data, datasize);
+            }));
+        });
 
-         if( pk >= _next_primary_key )
-            _next_primary_key = (pk >= no_available_primary_key) ? no_available_primary_key : (pk + 1);
+        auto ptr_pk = primary_key_extractor_type()(*ptr);
+        chaindb_assert(ptr_pk == pk, "invalid primary key of object");
 
-         hana::for_each( _indices, [&]( auto& idx ) {
-            typedef typename decltype(+hana::at_c<0>(idx))::type index_type;
+        safe_allocate(sizeof(service_info), "object doesn't exist", [&](auto& data, auto& datasize) {
+            internal_use_do_not_use::chaindb_service(get_code(), cursor, data, datasize);
+            unpack_object(ptr->service_, data, datasize);
+        });
 
-            auto secondary = index_type::extract_secondary_key( obj );
-            if( memcmp( &hana::at_c<index_type::index_number>(secondary_keys), &secondary, sizeof(secondary) ) != 0 ) {
-               auto indexitr = mutableitem.__iters[index_type::number()];
+        add_object_to_cache(ptr);
+        return ptr;
+    }
 
-               if( indexitr < 0 ) {
-                  typename index_type::secondary_key_type temp_secondary_key;
-                  indexitr = mutableitem.__iters[index_type::number()]
-                           = secondary_index_db_functions<typename index_type::secondary_key_type>::db_idx_find_primary( _code.value, _scope, index_type::name(), pk,  temp_secondary_key );
-               }
+    bool is_same_multidx(const item& o) const {
+        return (o.code_ == get_code() && o.scope_ == get_scope());
+    }
 
-               secondary_index_db_functions<typename index_type::secondary_key_type>::db_idx_update( indexitr, payer.value, secondary );
-            }
-         });
-      }
+public:
+    using const_iterator = const_iterator_impl<"primary"_n>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-      /**
-       *  Retrieves an existing object from a table using its primary key.
-       *  @ingroup multiindex
-       *
-       *  @param primary - Primary key value of the object
-       *  @return A constant reference to the object containing the specified primary key.
-       *
-       *  Exception - No object matches the given key
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example
-       *        // add dan account to table           - see emplace example
-       *
-       *        auto user = addresses.get("dan"_n);
-       *        eosio::check(user.first_name == "Daniel", "Couldn't get him.");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const T& get( uint64_t primary, const char* error_msg = "unable to find key" )const {
-         auto result = find( primary );
-         eosio::check( result != cend(), error_msg );
-         return *result;
-      }
+public:
+    multi_index(const account_name_t code, const scope_t scope)
+    : code_(code), scope_(scope), primary_idx_(this), items_map_(get_items_map(code, scope)) {
+    }
 
-      /**
-       *  Search for an existing object in a table using its primary key.
-       *  @ingroup multiindex
-       *
-       *  @param primary - Primary key value of the object
-       *  @return An iterator to the found object which has a primary key equal to `primary` OR the `end` iterator of the referenced table if an object with primary key `primary` is not found.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example
-       *        // add dan account to table           - see emplace example
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Couldn't get him.");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator find( uint64_t primary )const {
-         auto itr2 = std::find_if(_items_vector.rbegin(), _items_vector.rend(), [&](const item_ptr& ptr) {
-            return ptr._item->primary_key() == primary;
-         });
-         if( itr2 != _items_vector.rend() )
-            return iterator_to(*(itr2->_item));
+    constexpr static table_name_t table_name() { return TableName; }
 
-         auto itr = internal_use_do_not_use::db_find_i64( _code.value, _scope, static_cast<uint64_t>(TableName), primary );
-         if( itr < 0 ) return end();
+    account_name_t get_code() const  { return code_; }
+    scope_t get_scope() const { return scope_; }
 
-         const item& i = load_object_by_primary_iterator( itr );
-         return iterator_to(static_cast<const T&>(i));
-      }
+    const_iterator cbegin() const { return primary_idx_.cbegin(); }
+    const_iterator begin() const  { return cbegin(); }
 
-      /**
-       *  Search for an existing object in a table using its primary key.
-       *  @ingroup multiindex
-       *
-       *  @param primary - Primary key value of the object
-       *  @param error_msg - error message if an object with primary key `primary` is not found.
-       *  @return An iterator to the found object which has a primary key equal to `primary` OR throws an exception if an object with primary key `primary` is not found.
-       */
+    const_iterator cend() const  { return primary_idx_.cend(); }
+    const_iterator end() const   { return cend(); }
 
-      const_iterator require_find( uint64_t primary, const char* error_msg = "unable to find key" )const {
-         auto itr2 = std::find_if(_items_vector.rbegin(), _items_vector.rend(), [&](const item_ptr& ptr) {
-               return ptr._item->primary_key() == primary;
-            });
-         if( itr2 != _items_vector.rend() )
-            return iterator_to(*(itr2->_item));
+    const_reverse_iterator crbegin() const { return std::make_reverse_iterator(cend()); }
+    const_reverse_iterator rbegin() const  { return crbegin(); }
 
-         auto itr = internal_use_do_not_use::db_find_i64( _code.value, _scope, static_cast<uint64_t>(TableName), primary );
-         eosio::check( itr >= 0,  error_msg );
+    const_reverse_iterator crend() const { return std::make_reverse_iterator(cbegin()); }
+    const_reverse_iterator rend() const  { return crend(); }
 
-         const item& i = load_object_by_primary_iterator( itr );
-         return iterator_to(static_cast<const T&>(i));
-      }
+    const_iterator lower_bound(primary_key_t pk) const {
+        return primary_idx_.lower_bound(pk);
+    }
 
-      /**
-       *  Remove an existing object from a table using its primary key.
-       *  @ingroup multiindex
-       *
-       *  @param itr - An iterator pointing to the object to be removed
-       *
-       *  @pre itr points to an existing element
-       *  @post The object is removed from the table and all associated storage is reclaimed.
-       *  @post Secondary indices associated with the table are updated.
-       *  @post The existing payer for storage usage of the object is refunded for the table and secondary indices usage of the removed object, and if the table and indices are removed, for the associated overhead.
-       *
-       *  @return For the signature with `const_iterator`, returns a pointer to the object following the removed object.
-       *
-       *  Exceptions:
-       *  The object to be removed is not in the table.
-       *  The action is not authorized to modify the table.
-       *  The given iterator is invalid.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        // create reference to address_index  - see emplace example
-       *        // add dan account to table           - see emplace example
-       *
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Address for account not found");
-       *        addresses.erase( itr );
-       *        eosio::check(itr != addresses.end(), "Everting lock arf, Address not erased properly");
-       *      }
-       *  }
-       *  EOSIO_ABI( addressbook, (myaction) )
-       *  @endcode
-       */
-      const_iterator erase( const_iterator itr ) {
-         eosio::check( itr != end(), "cannot pass end iterator to erase" );
+    const_iterator upper_bound(primary_key_t pk) const {
+        return primary_idx_.upper_bound(pk);
+    }
 
-         const auto& obj = *itr;
-         ++itr;
+    primary_key_t available_primary_key() const {
+        if (next_primary_key_ == end_primary_key) {
+            next_primary_key_ = internal_use_do_not_use::chaindb_available_primary_key(get_code(), get_scope(), table_name());
+            chaindb_assert(next_primary_key_ != end_primary_key, "no available primary key");
+        }
+        return next_primary_key_;
+    }
 
-         erase(obj);
+    template<index_name_t IndexName>
+    auto get_index() const {
+        namespace hana = boost::hana;
 
-         return itr;
-      }
+        auto res = hana::find_if(indices_, [](auto&& in) {
+            return std::integral_constant<
+                bool, std::decay<decltype(in)>::type::index_name == static_cast<uint64_t>(IndexName)>();
+        });
 
-      /**
-       *  Remove an existing object from a table using its primary key.
-       *  @ingroup multiindex
-       *
-       *  @param obj - Object to be removed
-       *
-       *  @pre obj is an existing object in the table
-       *  @post The object is removed from the table and all associated storage is reclaimed.
-       *  @post Secondary indices associated with the table are updated.
-       *  @post The existing payer for storage usage of the object is refunded for the table and secondary indices usage of the removed object, and if the table and indices are removed, for the associated overhead.
-       *
-       *  Exceptions:
-       *  The object to be removed is not in the table.
-       *  The action is not authorized to modify the table.
-       *  The given iterator is invalid.
-       *
-       *  Example:
-       *
-       *  @code
-       *  // This assumes the code from the constructor example. Replace myaction() {...}
-       *
-       *      void myaction() {
-       *        auto itr = addresses.find("dan"_n);
-       *        eosio::check(itr != addresses.end(), "Record is not found");
-       *        addresses.erase(*itr);
-       *        itr = addresses.find("dan"_n);
-       *        eosio::check(itr == addresses.end(), "Record is not deleted");
-       *      }
-       *  }
-       *  EOSIO_DISPATCH( addressbook, (myaction) )
-       *  @endcode
-       */
-      void erase( const T& obj ) {
-         using namespace _multi_index_detail;
+        static_assert(res != hana::nothing, "name provided is not the name of any secondary index within multi_index");
 
-         const auto& objitem = static_cast<const item&>(obj);
-         eosio::check( objitem.__idx == this, "object passed to erase is not in multi_index" );
-         eosio::check( _code == current_receiver(), "cannot erase objects in table of another contract" ); // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
+        return index<IndexName, typename std::decay<decltype(res.value())>::type::extractor_type>(this);
+    }
 
-         auto pk = objitem.primary_key();
-         auto itr2 = std::find_if(_items_vector.rbegin(), _items_vector.rend(), [&](const item_ptr& ptr) {
-            return ptr._item->primary_key() == pk;
-         });
+    const_iterator iterator_to(const T& obj) const {
+        return primary_idx_.iterator_to(obj);
+    }
 
-         eosio::check( itr2 != _items_vector.rend(), "attempt to remove object that was not in multi_index" );
+    void flush_cache() {
+        items_map_.clear();
+    }
 
-         _items_vector.erase(--(itr2.base()));
+    template<typename Lambda>
+    const_iterator emplace(const account_name_t payer, Lambda&& constructor) const {
+        // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            get_code() == current_receiver(),
+            "cannot create objects in table of another contract");
 
-         internal_use_do_not_use::db_remove_i64( objitem.__primary_itr );
+        auto ptr = item_ptr(new item(*this, [&](auto& itm) {
+            constructor(static_cast<T&>(itm));
+        }));
 
-         hana::for_each( _indices, [&]( auto& idx ) {
-            typedef typename decltype(+hana::at_c<0>(idx))::type index_type;
+        auto& obj = static_cast<T&>(*ptr);
+        auto  pk = primary_key_extractor_type()(obj);
+        chaindb_assert(pk != end_primary_key, "invalid value of primary key");
 
-            auto i = objitem.__iters[index_type::number()];
-            if( i < 0 ) {
-              typename index_type::secondary_key_type secondary;
-              i = secondary_index_db_functions<typename index_type::secondary_key_type>::db_idx_find_primary( _code.value, _scope, index_type::name(), objitem.primary_key(),  secondary );
-            }
-            if( i >= 0 )
-               secondary_index_db_functions<typename index_type::secondary_key_type>::db_idx_remove( i );
-         });
-      }
+        safe_allocate(pack_size(obj), "invalid size of object", [&](auto& data, auto& size) {
+            pack_object(obj, data, size);
+            auto delta = internal_use_do_not_use::chaindb_insert(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            ptr->service_.size   = delta;
+            ptr->service_.payer  = eosio::name(payer);
+            ptr->service_.in_ram = true;
+        });
 
-};
-}  /// eosio
+        add_object_to_cache(ptr);
+
+        next_primary_key_ = pk + 1;
+        return const_iterator(this, const_iterator::uninitialized_find_by_pk, pk, std::move(ptr));
+    }
+
+    template<typename Lambda>
+    void modify(const const_iterator& itr, const account_name_t payer, Lambda&& updater) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to modify");
+        modify(*itr, payer, std::forward<Lambda&&>(updater));
+    }
+
+    template<typename Lambda>
+    void modify(const T& obj, const account_name_t payer, Lambda&& updater) const {
+        // Quick fix for mutating db using multi_index that shouldn't allow mutation. Real fix can come in RC2.
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            get_code() == current_receiver(),
+            "cannot modify objects in table of another contract");
+
+        auto& mobj = const_cast<T&>(obj);
+        auto& itm = static_cast<item&>(mobj);
+        chaindb_assert(is_same_multidx(itm), "object passed to modify is not in multi_index");
+
+        auto pk = primary_key_extractor_type()(obj);
+
+        updater(mobj);
+
+        auto mpk = primary_key_extractor_type()(obj);
+        chaindb_assert(pk == mpk, "updater cannot change primary key when modifying an object");
+
+        safe_allocate(pack_size(obj), "invalid size of object", [&](auto& data, auto& size) {
+            pack_object(obj, data, size);
+            auto delta = internal_use_do_not_use::chaindb_update(get_code(), get_scope(), table_name(), payer, pk, data, size);
+            itm.service_.payer = eosio::name(payer);
+            itm.service_.size += delta;
+        });
+    }
+
+    const T& get(const primary_key_t pk, const char* error_msg = "unable to find key") const {
+        auto itr = find(pk);
+        chaindb_assert(itr != cend(), error_msg);
+        return *itr;
+    }
+
+    const_iterator find(const primary_key_t pk) const {
+        return primary_idx_.find(pk);
+    }
+
+    const_iterator require_find(const primary_key_t pk, const char* error_msg = "unable to find key") const {
+        return primary_idx_.require_find(pk, error_msg);
+    }
+
+    const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to erase");
+
+        const auto& obj = *itr;
+        ++itr;
+        erase(obj, payer);
+        return itr;
+    }
+
+    void erase(const T& obj, const account_name_t payer = eosio::name()) const {
+        const auto& itm = static_cast<const item&>(obj);
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            get_code() == current_receiver(),
+            "cannot delete objects from table of another contract");
+
+        chaindb_assert(is_same_multidx(itm), "object passed to erase is not in multi_index");
+
+        auto pk = primary_key_extractor_type()(obj);
+        remove_object_from_cache(pk);
+        internal_use_do_not_use::chaindb_delete(get_code(), get_scope(), table_name(), payer, pk);
+    }
+
+    void move_to_ram(const T& obj) const {
+        auto& itm = static_cast<item&>(const_cast<T&>(obj));
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            get_code() == current_receiver(),
+            "cannot move objects from table of another contract");
+
+        chaindb_assert(is_same_multidx(itm), "object passed to move_to_ram is not in multi_index");
+        chaindb_assert(!itm.service_.in_ram, "object passed to move_to_ram is already in RAM");
+        auto pk = primary_key_extractor_type()(obj);
+        internal_use_do_not_use::chaindb_ram_state(get_code(), get_scope(), table_name(), pk, true);
+        itm.service_.in_ram = true;
+    }
+
+    void move_to_ram(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_ram");
+        move_to_ram(*itr);
+    }
+
+    void move_to_archive(const T& obj) const {
+        auto& itm = static_cast<item&>(const_cast<T&>(obj));
+
+        CHAINDB_ANOTHER_CONTRACT_PROTECT(
+            get_code() == current_receiver(),
+            "cannot move objects from table of another contract");
+
+        chaindb_assert(is_same_multidx(itm), "object passed to move_to_archive is not in multi_index");
+        chaindb_assert(itm.service_.in_ram,  "object passed to move_to_archive is already in archive");
+        auto pk = primary_key_extractor_type()(obj);
+        internal_use_do_not_use::chaindb_ram_state(get_code(), get_scope(), table_name(), pk, false);
+        itm.service_.in_ram = false;
+    }
+
+    void move_to_archive(const const_iterator& itr) const {
+        chaindb_assert(itr != end(), "cannot pass end iterator to move_to_archive");
+        move_to_archive(*itr);
+    }
+
+}; // class multi_index
+}  // namespace eosio

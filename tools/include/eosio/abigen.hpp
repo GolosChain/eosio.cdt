@@ -51,11 +51,6 @@ namespace eosio { namespace cdt {
          abi_action ret;
          auto action_name = decl->getEosioActionAttr()->getName();
 
-         if (rcs[get_action_name(decl)].empty())
-            std::cout << "Warning, action <"+get_action_name(decl)+"> does not have a ricardian contract\n";
-
-         ret.ricardian_contract = rcs[get_action_name(decl)];
-
          if (action_name.empty()) {
             try {
                validate_name( decl->getName().str(), error_handler );
@@ -82,11 +77,6 @@ namespace eosio { namespace cdt {
          abi_action ret;
 
          auto action_name = decl->getEosioActionAttr()->getName();
-
-         if (rcs[get_action_name(decl)].empty())
-            std::cout << "Warning, action <"+get_action_name(decl)+"> does not have a ricardian contract\n";
-
-         ret.ricardian_contract = rcs[get_action_name(decl)];
 
          if (action_name.empty()) {
             try {
@@ -226,16 +216,6 @@ namespace eosio { namespace cdt {
          _abi.tables.insert(t);
       }
 
-      void add_clauses( const std::vector<std::pair<std::string, std::string>>& clauses ) {
-         for ( auto clp : clauses ) {
-            _abi.ricardian_clauses.push_back({std::get<0>(clp), std::get<1>(clp)});
-         }
-      }
-
-      void add_contracts( const std::map<std::string, std::string>& rc ) {
-         rcs = rc;
-      }
-
       void add_variant( const clang::QualType& t ) {
          abi_variant var;
          auto pt = llvm::dyn_cast<clang::ElaboratedType>(t.getTypePtr());
@@ -312,14 +292,6 @@ namespace eosio { namespace cdt {
          ojson o;
          o["name"] = a.name;
          o["type"] = a.type;
-         o["ricardian_contract"] = a.ricardian_contract;
-         return o;
-      }
-
-      ojson clause_to_json( const abi_ricardian_clause_pair& clause ) {
-         ojson o;
-         o["id"] = clause.id;
-         o["body"] = clause.body;
          return o;
       }
 
@@ -351,7 +323,7 @@ namespace eosio { namespace cdt {
             set_of_tables.insert(t);
          }
 
-         return _abi.structs.empty() && _abi.typedefs.empty() && _abi.actions.empty() && set_of_tables.empty() && _abi.ricardian_clauses.empty() && _abi.variants.empty();
+         return _abi.structs.empty() && _abi.typedefs.empty() && _abi.actions.empty() && set_of_tables.empty() && _abi.variants.empty();
       }
 
       ojson to_json() {
@@ -445,10 +417,6 @@ namespace eosio { namespace cdt {
          for ( auto t : set_of_tables ) {
             o["tables"].push_back(table_to_json( t ));
          }
-         o["ricardian_clauses"]  = ojson::array();
-         for ( auto rc : _abi.ricardian_clauses ) {
-            o["ricardian_clauses"].push_back(clause_to_json( rc ));
-         }
          o["variants"]   = ojson::array();
          for ( auto v : _abi.variants ) {
             o["variants"].push_back(variant_to_json( v ));
@@ -461,6 +429,5 @@ namespace eosio { namespace cdt {
          abi                                   _abi;
          std::set<const clang::CXXRecordDecl*> tables;
          std::set<abi_table>                   ctables;
-         std::map<std::string, std::string>    rcs;
    };
 }} // ns eosio::cdt

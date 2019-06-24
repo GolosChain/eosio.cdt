@@ -1,5 +1,5 @@
 #pragma once
-#include <eosiolib/system.h>
+#include "system.h"
 
 extern "C" {
    /**
@@ -33,7 +33,8 @@ extern "C" {
     *  @param size - size of serialized action in bytes
     *  @pre `serialized_action` is a valid pointer to an array at least `size` bytes long
     */
-   void send_event(char *serialized_action, size_t size);
+   __attribute__((eosio_wasm_import))
+   void send_event(char *serialized_action, int32_t size);
 
    ///@ } actioncapi
 }

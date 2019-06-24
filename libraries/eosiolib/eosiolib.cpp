@@ -4,8 +4,8 @@
 
 namespace eosio {
    extern "C" {
-      __attribute__((eosio_wasm_import))
-      uint64_t current_time();
+     __attribute__((eosio_wasm_import))
+     uint64_t current_time();
      __attribute__((eosio_wasm_import))
      void set_blockchain_parameters_packed(char*, uint32_t);
      __attribute__((eosio_wasm_import))
@@ -25,7 +25,7 @@ namespace eosio {
    void get_blockchain_parameters(eosio::blockchain_parameters& params) {
       char buf[512];
       size_t size = get_blockchain_parameters_packed(buf, sizeof(buf));
-      eosio_assert(size && size <= sizeof(buf), "buffer is too small" );
+      eosio::check(size && size <= sizeof(buf), "buffer is too small" );
       params = unpack<eosio::blockchain_parameters>(buf, size);
    }
 

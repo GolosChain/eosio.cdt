@@ -2,6 +2,7 @@
 #include "producer_schedule.hpp"
 #include "../../core/eosio/crypto.hpp"
 #include "../../core/eosio/name.hpp"
+#include "../../core/eosio/symbol.hpp"
 #include "../../core/eosio/serialize.hpp"
 
 namespace eosio {
@@ -12,15 +13,6 @@ namespace eosio {
          bool is_privileged( uint64_t account );
 
         __attribute__((eosio_wasm_import))
-        void get_resource_limits( uint64_t account, int64_t* ram_bytes, int64_t* net_weight, int64_t* cpu_weight );
-
-        __attribute__((eosio_wasm_import))
-        void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
-
-        __attribute__((eosio_wasm_import))
-        void set_privileged( uint64_t account, bool is_priv );
-
-        __attribute__((eosio_wasm_import))
         void set_blockchain_parameters_packed( char* data, uint32_t datalen );
 
         __attribute__((eosio_wasm_import))
@@ -28,6 +20,12 @@ namespace eosio {
 
         __attribute((eosio_wasm_import))
         int64_t set_proposed_producers( char*, uint32_t );
+
+        __attribute((eosio_wasm_import))
+        void update_stake_proxied( uint64_t token_code_raw, uint64_t account, int32_t force );
+
+        __attribute((eosio_wasm_import))
+        void recall_stake_proxied( uint64_t token_code_raw, uint64_t grantor_name, uint64_t agent_name, int32_t pct );
       }
    }
 
@@ -42,120 +40,48 @@ namespace eosio {
     *  @ingroup privileged
     */
    struct blockchain_parameters {
+      uint32_t   base_per_transaction_net_usage;      ///< the base amount of net usage billed for a transaction to cover incidentals
+      uint32_t   context_free_discount_net_usage_num; ///< the numerator for the discount on net usage of context-free data
+      uint32_t   context_free_discount_net_usage_den; ///< the denominator for the discount on net usage of context-free data
 
-      /**
-      * The maxiumum net usage in instructions for a block
-      * @brief the maxiumum net usage in instructions for a block
-      */
-      uint64_t max_block_net_usage;
+      uint32_t   min_transaction_cpu_usage;           ///< the minimum billable cpu usage (in microseconds) that the chain requires
 
-      /**
-      * The target percent (1% == 100, 100%= 10,000) of maximum net usage; exceeding this triggers congestion handling
-      * @brief The target percent (1% == 100, 100%= 10,000) of maximum net usage; exceeding this triggers congestion handling
-      */
-      uint32_t target_block_net_usage_pct;
+      uint64_t   min_transaction_ram_usage;           ///< the minimum billable ram usage (in bytes) that the chain requires
 
-      /**
-      * The maximum objectively measured net usage that the chain will allow regardless of account limits
-      * @brief The maximum objectively measured net usage that the chain will allow regardless of account limits
-      */
-      uint32_t max_transaction_net_usage;
+      uint32_t   max_transaction_lifetime;            ///< the maximum number of seconds that an input transaction's expiration can be ahead of the time of the block in which it is first included
+      uint32_t   deferred_trx_expiration_window;      ///< the number of seconds after the time a deferred transaction can first execute until it expires
+      uint32_t   max_transaction_delay;               ///< the maximum number of seconds that can be imposed as a delay requirement by authorization checks
+      uint32_t   max_inline_action_size;              ///< maximum allowed size (in bytes) of an inline action
+      uint16_t   max_inline_action_depth;             ///< recursion depth limit on sending inline actions
+      uint16_t   max_authority_depth;                 ///< recursion depth limit for checking if an authority is satisfied
 
-      /**
-       * The base amount of net usage billed for a transaction to cover incidentals
-       */
-      uint32_t base_per_transaction_net_usage;
+      std::vector<uint64_t> max_block_usage;
+      std::vector<uint64_t> max_transaction_usage;
 
-      /**
-       * The amount of net usage leeway available whilst executing a transaction (still checks against new limits without leeway at the end of the transaction)
-       * @brief The amount of net usage leeway available whilst executing a transaction  (still checks against new limits without leeway at the end of the transaction)
-       */
-      uint32_t net_usage_leeway;
+      std::vector<uint64_t> target_virtual_limits;
+      std::vector<uint64_t> min_virtual_limits;
+      std::vector<uint64_t> max_virtual_limits;
+      std::vector<uint32_t> usage_windows;
 
-      /**
-      * The numerator for the discount on net usage of context-free data
-      * @brief The numerator for the discount on net usage of context-free data
-      */
-      uint32_t context_free_discount_net_usage_num;
+      std::vector<uint16_t> virtual_limit_decrease_pct;
+      std::vector<uint16_t> virtual_limit_increase_pct;
 
-      /**
-      * The denominator for the discount on net usage of context-free data
-      * @brief The denominator for the discount on net usage of context-free data
-      */
-      uint32_t context_free_discount_net_usage_den;
-
-      /**
-      * The maxiumum billable cpu usage (in microseconds) for a block
-      * @brief The maxiumum billable cpu usage (in microseconds) for a block
-      */
-      uint32_t max_block_cpu_usage;
-
-      /**
-      * The target percent (1% == 100, 100%= 10,000) of maximum cpu usage; exceeding this triggers congestion handling
-      * @brief The target percent (1% == 100, 100%= 10,000) of maximum cpu usage; exceeding this triggers congestion handling
-      */
-      uint32_t target_block_cpu_usage_pct;
-
-      /**
-      * The maximum billable cpu usage (in microseconds) that the chain will allow regardless of account limits
-      * @brief The maximum billable cpu usage (in microseconds) that the chain will allow regardless of account limits
-      */
-      uint32_t max_transaction_cpu_usage;
-
-      /**
-      * The minimum billable cpu usage (in microseconds) that the chain requires
-      * @brief The minimum billable cpu usage (in microseconds) that the chain requires
-      */
-      uint32_t min_transaction_cpu_usage;
-
-      /**
-       * Maximum lifetime of a transacton
-       * @brief Maximum lifetime of a transacton
-       */
-      uint32_t max_transaction_lifetime;
-
-      /**
-      * The number of seconds after the time a deferred transaction can first execute until it expires
-      * @brief the number of seconds after the time a deferred transaction can first execute until it expires
-      */
-      uint32_t deferred_trx_expiration_window;
-
-
-      /**
-      * The maximum number of seconds that can be imposed as a delay requirement by authorization checks
-      * @brief The maximum number of seconds that can be imposed as a delay requirement by authorization checks
-      */
-      uint32_t max_transaction_delay;
-
-      /**
-       * Maximum size of inline action
-       * @brief Maximum size of inline action
-       */
-      uint32_t max_inline_action_size;
-
-      /**
-       * Maximum depth of inline action
-       * @brief Maximum depth of inline action
-       */
-      uint16_t max_inline_action_depth;
-
-      /**
-       * Maximum authority depth
-       * @brief Maximum authority depth
-       */
-      uint16_t max_authority_depth;
-
+      std::vector<uint32_t> account_usage_windows;
 
       EOSLIB_SERIALIZE( blockchain_parameters,
-                        (max_block_net_usage)(target_block_net_usage_pct)
-                        (max_transaction_net_usage)(base_per_transaction_net_usage)(net_usage_leeway)
-                        (context_free_discount_net_usage_num)(context_free_discount_net_usage_den)
+           (base_per_transaction_net_usage)
+           (context_free_discount_net_usage_num)(context_free_discount_net_usage_den)
 
-                        (max_block_cpu_usage)(target_block_cpu_usage_pct)
-                        (max_transaction_cpu_usage)(min_transaction_cpu_usage)
+           (min_transaction_cpu_usage)
+           (min_transaction_ram_usage)
 
-                        (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
-                        (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
+           (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
+           (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
+
+           (max_block_usage)(max_transaction_usage)
+
+           (target_virtual_limits)(min_virtual_limits)(max_virtual_limits)(usage_windows)
+           (virtual_limit_decrease_pct)(virtual_limit_increase_pct)(account_usage_windows)
       )
    };
 
@@ -174,32 +100,6 @@ namespace eosio {
     *  @param params - It will be replaced with the retrieved blockchain params
     */
    void get_blockchain_parameters(eosio::blockchain_parameters& params);
-
-    /**
-    *  Get the resource limits of an account
-    *
-    *  @ingroup privileged
-    *  @param account - name of the account whose resource limit to get
-    *  @param ram_bytes -  output to hold retrieved ram limit in absolute bytes
-    *  @param net_weight - output to hold net limit
-    *  @param cpu_weight - output to hold cpu limit
-    */
-   inline void get_resource_limits( name account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) {
-      internal_use_do_not_use::get_resource_limits( account.value, &ram_bytes, &net_weight, &cpu_weight );
-   }
-
-   /**
-    *  Set the resource limits of an account
-    *
-    *  @ingroup privileged
-    *  @param account - name of the account whose resource limit to be set
-    *  @param ram_bytes - ram limit in absolute bytes
-    *  @param net_weight - fractionally proportionate net limit of available resources based on (weight / total_weight_of_all_accounts)
-    *  @param cpu_weight - fractionally proportionate cpu limit of available resources based on (weight / total_weight_of_all_accounts)
-    */
-   inline void set_resource_limits( name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
-      internal_use_do_not_use::set_resource_limits( account.value, ram_bytes, net_weight, cpu_weight );
-   }
 
    /**
     *  Proposes a schedule change
@@ -224,15 +124,11 @@ namespace eosio {
       return internal_use_do_not_use::is_privileged( account.value );
    }
 
-   /**
-    *  Set the privileged status of an account
-    *
-    *  @ingroup privileged
-    *  @param account - name of the account whose privileged account to be set
-    *  @param is_priv - privileged status
-    */
-   inline void set_privileged( name account, bool is_priv ) {
-      internal_use_do_not_use::set_privileged( account.value, is_priv );
+   inline void update_stake_proxied( symbol_code token_code, name account, bool force ) {
+      return internal_use_do_not_use::update_stake_proxied(token_code.raw(), account.value, force);
    }
 
+   inline void recall_stake_proxied( symbol_code token_code, name grantor_name, name agent_name, int32_t pct ) {
+      return internal_use_do_not_use::recall_stake_proxied(token_code.raw(), grantor_name.value, agent_name.value, pct);
+   }
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <eosiolib/types.h>
+#include "types.h"
 
 extern "C" {
 /**
@@ -22,20 +22,23 @@ extern "C" {
  *  Verifies that @ref domain is an existing domain name.
  *  @param domain - domain name to check, a null terminated string
  */
-bool is_domain(const char* domain);
+__attribute__((eosio_wasm_import))
+int32_t is_domain(const char* domain);
 
 /**
  *  Verifies that @ref username is an existing username in given scope.
  *  @param scope - account, at which "scope" username registered
  *  @param username - username to check, a null terminated string
  */
-bool is_username(capi_name scope, const char* username);
+__attribute__((eosio_wasm_import))
+int32_t is_username(capi_name scope, const char* username);
 
 /**
  *  Get an owner of the given domain name. Throws if not found.
  *  @param domain - domain name to get owner, a null terminated string
  *  @return the account which is current owner of given domain name
  */
+__attribute__((eosio_wasm_import))
 capi_name get_domain_owner(const char* domain);
 
 /**
@@ -43,6 +46,7 @@ capi_name get_domain_owner(const char* domain);
  *  @param domain - domain name to check, a null terminated string
  *  @return the account which is currently linked to domain name. Can be 0 if domain unlinked
  */
+__attribute__((eosio_wasm_import))
 capi_name resolve_domain(const char* domain);
 
 /**
@@ -51,6 +55,7 @@ capi_name resolve_domain(const char* domain);
  *  @param username - username to check, a null terminated string
  *  @return the account which is maps to username in scope
  */
+__attribute__((eosio_wasm_import))
 capi_name resolve_username(capi_name scope, const char* username);
 
 
