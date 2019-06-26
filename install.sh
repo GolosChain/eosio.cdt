@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
-# This is the EOSIO automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/EOSIO/eos
+# This is the CyberWay automated install script for Linux and Mac OS.
+# This file was downloaded from https://github.com/GolosChain/cyberway
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/EOSIO/eos/blob/master/LICENSE.txt
+# https://github.com/GolosChain/cyberway/blob/master/LICENSE
 ##########################################################################
    
 
@@ -54,7 +54,7 @@
    }
 
    install_symlinks() {
-		printf "\\n\\tInstalling EOSIO.CDT Binary Symlinks\\n\\n"
+		printf "\\n\\tInstalling CyberWay.CDT Binary Symlinks\\n\\n"
       create_symlink "llvm-ranlib eosio-ranlib"
       create_symlink "llvm-ar eosio-ar"
       create_symlink "llvm-objdump eosio-objdump"
@@ -89,7 +89,7 @@
    
 	if ! make install
 	then
-		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing EOSIO has exited with the above error.\\n\\n"
+		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing CyberWay has exited with the above error.\\n\\n"
 		exit -1
 	fi
    popd &> /dev/null 
@@ -97,17 +97,13 @@
    install_symlinks   
    create_cmake_symlink "eosio.cdt-config.cmake"
 
-   printf "\n${bldred}\t      ___           ___           ___                       ___\n"
-   printf "\t     /  /\\         /  /\\         /  /\\        ___          /  /\\ \n"
-   printf "\t    /  /:/_       /  /::\\       /  /:/_      /  /\\        /  /::\\ \n"
-   printf "\t   /  /:/ /\\     /  /:/\\:\\     /  /:/ /\\    /  /:/       /  /:/\\:\\ \n"
-   printf "\t  /  /:/ /:/_   /  /:/  \\:\\   /  /:/ /::\\  /__/::\\      /  /:/  \\:\\ \n"
-   printf "\t /__/:/ /:/ /\\ /__/:/ \\__\\:\\ /__/:/ /:/\\:\\ \\__\\/\\:\\__  /__/:/ \\__\\:\\ \n"
-   printf "\t \\  \\:\\/:/ /:/ \\  \\:\\ /  /:/ \\  \\:\\/:/~/:/    \\  \\:\\/\\ \\  \\:\\ /  /:/ \n"
-   printf "\t  \\  \\::/ /:/   \\  \\:\\  /:/   \\  \\::/ /:/      \\__\\::/  \\  \\:\\  /:/ \n"
-   printf "\t   \\  \\:\\/:/     \\  \\:\\/:/     \\__\\/ /:/       /__/:/    \\  \\:\\/:/ \n"
-   printf "\t    \\  \\::/       \\  \\::/        /__/:/        \\__\\/      \\  \\::/ \n"
-   printf "\t     \\__\\/         \\__\\/         \\__\\/                     \\__\\/ \n${txtrst}"
+  printf "${bldred}\n\n"
+  printf '╔═══╗╔╗──╔╗╔══╗─╔═══╗╔═══╗──────╔═══╗╔╗──╔╗\n'
+  printf '║╔═╗║║╚╗╔╝║║╔╗║─║╔══╝║╔═╗║──────║╔═╗║║╚╗╔╝║\n'
+  printf '║║─╚╝╚╗╚╝╔╝║╚╝╚╗║╚══╗║╚═╝║╔╗╔╗╔╗║║─║║╚╗╚╝╔╝\n'
+  printf '║║─╔╗─╚╗╔╝─║╔═╗║║╔══╝║╔╗╔╝║╚╝╚╝║║╚═╝║─╚╗╔╝─\n'
+  printf '║╚═╝║──║║──║╚═╝║║╚══╗║║║╚╗╚╗╔╗╔╝║╔═╗║──║║──\n'
+  printf "╚═══╝──╚╝──╚═══╝╚═══╝╚╝╚═╝─╚╝╚╝─╚╝─╚╝──╚╝──\n\n${txtrst}"
 
 	printf "\\tFor more information:\\n"
 	printf "\\tEOSIO website: https://eos.io\\n"

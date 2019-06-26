@@ -1,18 +1,18 @@
 #pragma once
 
-#include <eosiolib/action.h>
-#include <eosiolib/chain.h>
-#include <eosiolib/crypto.h>
-#include <eosiolib/db.h>
-#include <eosiolib/permission.h>
-#include <eosiolib/print.h>
-#include <eosiolib/privileged.h>
-#include <eosiolib/system.h>
-#include <eosiolib/transaction.h>
-#include <eosiolib/types.h>
+#include <eosio/action.h>
+#include <eosio/chain.h>
+#include <eosio/crypto.h>
+#include <eosio/permission.h>
+#include <eosio/print.h>
+#include <eosio/privileged.h>
+#include <eosio/system.h>
+#include <eosio/transaction.h>
+#include <eosio/types.h>
 
 #include <type_traits>
 
+#warning "<eosio/native/intrinsics_def.hpp> is deprecated use <eosio/intrinsics_def.hpp>"
 namespace eosio { namespace native {
    template <typename... Args, size_t... Is>
    auto get_args_full(std::index_sequence<Is...>) {
@@ -45,66 +45,6 @@ intrinsic_macro(get_blockchain_parameters_packed) \
 intrinsic_macro(set_blockchain_parameters_packed) \
 intrinsic_macro(is_privileged) \
 intrinsic_macro(get_active_producers) \
-intrinsic_macro(db_idx64_store) \
-intrinsic_macro(db_idx64_remove) \
-intrinsic_macro(db_idx64_update) \
-intrinsic_macro(db_idx64_find_primary) \
-intrinsic_macro(db_idx64_find_secondary) \
-intrinsic_macro(db_idx64_lowerbound) \
-intrinsic_macro(db_idx64_upperbound) \
-intrinsic_macro(db_idx64_end) \
-intrinsic_macro(db_idx64_next) \
-intrinsic_macro(db_idx64_previous) \
-intrinsic_macro(db_idx128_store) \
-intrinsic_macro(db_idx128_remove) \
-intrinsic_macro(db_idx128_update) \
-intrinsic_macro(db_idx128_find_primary) \
-intrinsic_macro(db_idx128_find_secondary) \
-intrinsic_macro(db_idx128_lowerbound) \
-intrinsic_macro(db_idx128_upperbound) \
-intrinsic_macro(db_idx128_end) \
-intrinsic_macro(db_idx128_next) \
-intrinsic_macro(db_idx128_previous) \
-intrinsic_macro(db_idx256_store) \
-intrinsic_macro(db_idx256_remove) \
-intrinsic_macro(db_idx256_update) \
-intrinsic_macro(db_idx256_find_primary) \
-intrinsic_macro(db_idx256_find_secondary) \
-intrinsic_macro(db_idx256_lowerbound) \
-intrinsic_macro(db_idx256_upperbound) \
-intrinsic_macro(db_idx256_end) \
-intrinsic_macro(db_idx256_next) \
-intrinsic_macro(db_idx256_previous) \
-intrinsic_macro(db_idx_double_store) \
-intrinsic_macro(db_idx_double_remove) \
-intrinsic_macro(db_idx_double_update) \
-intrinsic_macro(db_idx_double_find_primary) \
-intrinsic_macro(db_idx_double_find_secondary) \
-intrinsic_macro(db_idx_double_lowerbound) \
-intrinsic_macro(db_idx_double_upperbound) \
-intrinsic_macro(db_idx_double_end) \
-intrinsic_macro(db_idx_double_next) \
-intrinsic_macro(db_idx_double_previous) \
-intrinsic_macro(db_idx_long_double_store) \
-intrinsic_macro(db_idx_long_double_remove) \
-intrinsic_macro(db_idx_long_double_update) \
-intrinsic_macro(db_idx_long_double_find_primary) \
-intrinsic_macro(db_idx_long_double_find_secondary) \
-intrinsic_macro(db_idx_long_double_lowerbound) \
-intrinsic_macro(db_idx_long_double_upperbound) \
-intrinsic_macro(db_idx_long_double_end) \
-intrinsic_macro(db_idx_long_double_next) \
-intrinsic_macro(db_idx_long_double_previous) \
-intrinsic_macro(db_store_i64) \
-intrinsic_macro(db_update_i64) \
-intrinsic_macro(db_remove_i64) \
-intrinsic_macro(db_get_i64) \
-intrinsic_macro(db_next_i64) \
-intrinsic_macro(db_previous_i64) \
-intrinsic_macro(db_find_i64) \
-intrinsic_macro(db_lowerbound_i64) \
-intrinsic_macro(db_upperbound_i64) \
-intrinsic_macro(db_end_i64) \
 intrinsic_macro(assert_recover_key) \
 intrinsic_macro(recover_key) \
 intrinsic_macro(assert_sha256) \

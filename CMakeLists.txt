@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(eosio_cdt)
+project(cyberway_cdt)
 
 find_program(SCCACHE_FOUND sccache)
 if (SCCACHE_FOUND)
@@ -17,9 +17,9 @@ endif()
 
 
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 5)
-set(VERSION_PATCH 0)
-#set(VERSION_SUFFIX )
+set(VERSION_MINOR 6)
+set(VERSION_PATCH 1)
+#set(VERSION_SUFFIX rc2)
 
 if (VERSION_SUFFIX)
    set(VERSION_FULL "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}-${VERSION_SUFFIX}")
@@ -68,11 +68,11 @@ configure_file(${CMAKE_SOURCE_DIR}/imports/eosio.imports.in ${CMAKE_BINARY_DIR}/
 install(FILES ${CMAKE_BINARY_DIR}/eosio.imports DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 # section for package construction
-set(VENDOR "block.one")
-set(PROJECT_NAME "eosio.cdt")
-set(DESC "Toolchain and supporting tools for the EOS.IO platform")
-set(URL "https://github.com/eosio/eosio.cdt")
-set(EMAIL "support@block.one")
+set(VENDOR "goloscore")
+set(PROJECT_NAME "cyberway.cdt")
+set(DESC "Toolchain and supporting tools for the CyberWay platform")
+set(URL "https://github.com/GolosChain/cyberway.cdt")
+set(EMAIL "support@golos.io")
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_package.sh.in ${CMAKE_BINARY_DIR}/packages/generate_package.sh @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_deb.sh ${CMAKE_BINARY_DIR}/packages/generate_deb.sh COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_bottle.sh ${CMAKE_BINARY_DIR}/packages/generate_bottle.sh COPYONLY)
