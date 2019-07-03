@@ -908,7 +908,7 @@ private:
         }
 
         template<typename Lambda>
-        void modify(const_iterator itr, account_name_t payer, Lambda&& updater) const {
+        void modify(const const_iterator& itr, account_name_t payer, Lambda&& updater) const {
             chaindb_assert(itr != cend(), "cannot pass end iterator to modify");
             multidx_->modify(*itr, payer, std::forward<Lambda&&>(updater));
         }
