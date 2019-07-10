@@ -1,3 +1,9 @@
+<img width="400" src="./docs/logo.jpg" />  
+
+*****  
+[![buildkite](https://badge.buildkite.com/50fd0625df4022ddefd42d5ff09b803ee4d684994b1463447d.svg?branch=master)](https://buildkite.com/cyberway.cdt)  
+[![GitHub](https://img.shields.io/github/license/goloschain/cyberway.cdt.svg)](https://github.com/GolosChain/cyberway.cdt/blob/master/LICENSE)  
+
 # EOSIO.CDT (Contract Development Toolkit)
 ## Version : 1.5.0
 
