@@ -62,7 +62,10 @@ void update_stake_proxied( uint64_t token_code_raw, capi_name account, int32_t f
 /**
  */
 __attribute__((eosio_wasm_import))
-void recall_stake_proxied( uint64_t token_code_raw, capi_name grantor_name, capi_name agent_name, int32_t pct );
+void recall_stake_proxied( uint64_t token_code_raw, capi_name grantor_name, capi_name recipient_name, int32_t pct );
+
+__attribute__((eosio_wasm_import))
+uint64_t get_used_resources_cost( capi_name account );
 
 #ifdef __cplusplus
 }

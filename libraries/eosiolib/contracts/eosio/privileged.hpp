@@ -25,7 +25,10 @@ namespace eosio {
         void update_stake_proxied( uint64_t token_code_raw, uint64_t account, int32_t force );
 
         __attribute((eosio_wasm_import))
-        void recall_stake_proxied( uint64_t token_code_raw, uint64_t grantor_name, uint64_t agent_name, int32_t pct );
+        void recall_stake_proxied( uint64_t token_code_raw, uint64_t grantor_name, uint64_t recipient_name, int32_t pct );
+        
+        __attribute((eosio_wasm_import))
+        uint64_t get_used_resources_cost(  uint64_t account );
       }
    }
 
@@ -132,7 +135,11 @@ namespace eosio {
       return internal_use_do_not_use::update_stake_proxied(token_code.raw(), account.value, force);
    }
 
-   inline void recall_stake_proxied( symbol_code token_code, name grantor_name, name agent_name, int32_t pct ) {
-      return internal_use_do_not_use::recall_stake_proxied(token_code.raw(), grantor_name.value, agent_name.value, pct);
+   inline void recall_stake_proxied( symbol_code token_code, name grantor_name, name recipient_name, int32_t pct ) {
+      return internal_use_do_not_use::recall_stake_proxied(token_code.raw(), grantor_name.value, recipient_name.value, pct);
+   }
+   
+   inline uint64_t get_used_resources_cost( name account ) {
+      return internal_use_do_not_use::get_used_resources_cost(account.value);
    }
 }
