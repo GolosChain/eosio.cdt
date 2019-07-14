@@ -700,10 +700,9 @@ private:
 
             multidx_ = src.multidx_;
 
+            cursor_ = src.cursor_;
             if (src.is_cursor_initialized()) {
-                cursor_ = internal_use_do_not_use::chaindb_clone(get_code(), src.cursor_);
-            } else {
-                cursor_ = src.cursor_;
+                src.cursor_ = internal_use_do_not_use::chaindb_clone(get_code(), cursor_);
             }
 
             primary_key_ = src.primary_key_;
