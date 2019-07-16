@@ -864,13 +864,10 @@ private:
             this->operator=(src);
         }
         const const_reverse_iterator_impl& operator=(const const_reverse_iterator_impl& src) {
-            if (this == &src) {
-                return *this;
+            if (this != &src) {
+                pos_   = src.pos_;
+                value_ = src.value_;
             }
-
-            pos_   = src.pos_;
-            value_ = src.value_;
-            has_value_ = src.has_value_;
             return *this;
         }
 
@@ -878,13 +875,10 @@ private:
             this->operator=(std::move(src));
         }
         constexpr const const_reverse_iterator_impl& operator=(const_reverse_iterator_impl&& src) {
-            if (this == &src) {
-                return *this;
+            if (this != &src) {
+                pos_   = std::move(src.pos_);
+                value_ = std::move(src.value_);
             }
-
-            pos_   = std::move(src.pos_);
-            value_ = std::move(src.value_);
-            has_value_ = src.has_value_;
             return *this;
         }
 
@@ -894,18 +888,19 @@ private:
 
         constexpr reference operator*() const {
             lazy_init_value();
-            return value_.operator*();
+            return (*value_).operator*();
         }
 
         constexpr pointer operator->() const {
             lazy_init_value();
-            return value_.operator->();
+            return (*value_).operator->();
         }
 
         const_reverse_iterator_impl& operator++() {
-            lazy_init_value();
             --pos_;
-            --value_;
+            if (value_.has_value()) {
+                --(*value_);
+            }
             return *this;
         }
 
@@ -917,7 +912,9 @@ private:
 
         const_reverse_iterator_impl& operator--() {
             ++pos_;
-            ++value_;
+            if (value_.has_value()) {
+                ++(*value_);
+            }
             return *this;
         }
 
@@ -929,17 +926,14 @@ private:
 
     private:
         const_iterator_type pos_;
-        mutable const_iterator_type value_;
-        mutable bool has_value_ = false;
+        mutable std::optional<const_iterator_type> value_;
 
     private:
         void lazy_init_value() const {
-            if (has_value_) {
-                return;
+            if (!value_.has_value()) {
+                value_.emplace(pos_);
+                --(*value_);
             }
-            has_value_ = true;
-            value_ = pos_;
-            --value_;
         }
     }; // struct multi_index::const_reverse_iterator_impl
 
