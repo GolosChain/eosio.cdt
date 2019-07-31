@@ -3,9 +3,9 @@ ARG buildtype=stable
 FROM cyberway/builder:$buildtype as builder
 ARG branch=master
 
-ADD https://api.github.com/repos/GolosChain/cyberway.cdt/git/refs/heads/$branch /etc/version.json
+ADD https://api.github.com/repos/cyberway/cyberway.cdt/git/refs/heads/$branch /etc/version.json
 
-RUN git clone -b $branch https://github.com/GolosChain/cyberway.cdt.git --recursive
+RUN git clone -b $branch https://github.com/cyberway/cyberway.cdt.git --recursive
 
 RUN cd cyberway.cdt \
     && echo "$branch:$(git rev-parse HEAD)" > version \

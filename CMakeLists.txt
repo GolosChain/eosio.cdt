@@ -71,7 +71,7 @@ install(FILES ${CMAKE_BINARY_DIR}/eosio.imports DESTINATION ${CMAKE_INSTALL_PREF
 set(VENDOR "goloscore")
 set(PROJECT_NAME "cyberway.cdt")
 set(DESC "Toolchain and supporting tools for the CyberWay platform")
-set(URL "https://github.com/GolosChain/cyberway.cdt")
+set(URL "https://github.com/cyberway/cyberway.cdt")
 set(EMAIL "support@golos.io")
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_package.sh.in ${CMAKE_BINARY_DIR}/packages/generate_package.sh @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_deb.sh ${CMAKE_BINARY_DIR}/packages/generate_deb.sh COPYONLY)
