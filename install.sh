@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
 # This is the CyberWay automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/GolosChain/cyberway
+# This file was downloaded from https://github.com/cyberway/cyberway
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/GolosChain/cyberway/blob/master/LICENSE
+# https://github.com/cyberway/cyberway/blob/master/LICENSE
 ##########################################################################
    
 
