@@ -2,8 +2,9 @@ ARG buildtype=stable
 
 FROM cyberway/builder:$buildtype as builder
 ARG branch=master
+ARG ref=heads/$branch
 
-ADD https://api.github.com/repos/cyberway/cyberway.cdt/git/refs/heads/$branch /etc/version.json
+ADD https://api.github.com/repos/cyberway/cyberway.cdt/git/refs/$ref /etc/version.json
 
 RUN git clone -b $branch https://github.com/cyberway/cyberway.cdt.git --recursive
 
