@@ -103,6 +103,16 @@ void require_recipient( capi_name name );
 __attribute__((eosio_wasm_import))
 void require_auth( capi_name name );
 
+/**
+ *  Verifies that name exists in the set of provided auths on a action.
+ *
+ *  @brief Verify specified account exists in the set of provided auths
+ *  @param name - name of the account to be verified
+ *  @return true if name exists in the set of provided auths
+ */
+__attribute__((eosio_wasm_import))
+bool weak_require_auth( capi_name name );
+
  /**
  *  Verifies that name has auth.
  *
@@ -121,6 +131,17 @@ bool has_auth( capi_name name );
  */
 __attribute__((eosio_wasm_import))
 void require_auth2( capi_name name, capi_name permission );
+
+/**
+ *  Verifies that name exists in the set of provided auths on a action.
+ *
+ *  @brief Verify specified account exists in the set of provided auths
+ *  @param name - name of the account to be verified
+ *  @param permission - permission level to be verified
+ *  @return true if names exists in the set of provided auths
+ */
+__attribute__((eosio_wasm_import))
+bool weak_require_auth2( capi_name name, capi_name permission );
 
 /**
  *  Verifies that @ref name is an existing account.
