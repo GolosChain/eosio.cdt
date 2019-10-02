@@ -16,7 +16,7 @@ RUN cd cyberway.cdt \
         -DCMAKE_CXX_COMPILER=clang++ \
         -DCMAKE_C_COMPILER=clang \
         -DCMAKE_INSTALL_PREFIX=/opt \
-    && cmake --build /tmp/build --target install
+    && cmake -DCMAKE_INSTALL_PREFIX=/opt --build /tmp/build --target install
 
 FROM ubuntu:18.04
 
