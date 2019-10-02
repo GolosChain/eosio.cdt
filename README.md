@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <img width="400" src="./docs/logo.jpg" />  
 
 *****  
@@ -5,7 +6,7 @@
 [![GitHub](https://img.shields.io/github/license/cyberway/cyberway.cdt.svg)](https://github.com/cyberway/cyberway.cdt/blob/master/LICENSE)  
 
 # CyberWay.CDT (Contract Development Toolkit)
-## Version : 1.6.1
+## Version : 1.6.2
 
 
 CyberWay.CDT is a toolchain for WebAssembly (WASM) and set of tools to facilitate contract writing for the CyberWay platform.  In addition to being a general purpose WebAssembly toolchain, [CyberWay](https://github.com/cyberway/cyberway) specific optimizations are available to support building CyberWay smart contracts.  This toolchain is built around [Clang 7](https://github.com/eosio/llvm), which means that CyberWay.CDT has the most currently available optimizations and analyses from LLVM, but as the WASM target is still considered experimental, some optimizations are not available or incomplete.
