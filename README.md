@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <img width="400" src="./docs/logo.jpg" />  
 
 *****  
