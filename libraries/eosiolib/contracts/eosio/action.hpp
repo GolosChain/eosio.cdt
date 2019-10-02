@@ -33,10 +33,16 @@ namespace eosio {
          void require_auth( uint64_t name );
 
          __attribute__((eosio_wasm_import))
+         bool weak_require_auth( uint64_t name );
+
+         __attribute__((eosio_wasm_import))
          bool has_auth( uint64_t name );
 
          __attribute__((eosio_wasm_import))
          void require_auth2( uint64_t name, uint64_t permission );
+
+         __attribute__((eosio_wasm_import))
+         bool weak_require_auth2( uint64_t name, uint64_t permission );
 
          __attribute__((eosio_wasm_import))
          bool is_account( uint64_t name );
@@ -133,6 +139,17 @@ namespace eosio {
    }
 
    /**
+    *  Verifies that @ref name exists in the set of provided auths on a action.
+    *
+    *  @ingroup action
+    *  @param name - name of the account to be verified
+    *  @return true if @ref name exists in the set of provided auths
+    */
+   inline bool weak_require_auth( name n ) {
+      return internal_use_do_not_use::weak_require_auth( n.value );
+   }
+
+   /**
    *  Returns the time in microseconds from 1970 of the publication_time
    *
    *  @ingroup action
@@ -224,6 +241,17 @@ namespace eosio {
     */
    inline void require_auth( const permission_level& level ) {
       internal_use_do_not_use::require_auth2( level.actor.value, level.permission.value );
+   }
+
+   /**
+    *  Require the specified authorization for this action.
+    *
+    *  @ingroup action
+    *  @param level - Authorization to be required
+    *  @return true if action has the specified auth
+    */
+   inline bool weak_require_auth( const permission_level& level ) {
+      return internal_use_do_not_use::weak_require_auth2( level.actor.value, level.permission.value );
    }
 
    /**
