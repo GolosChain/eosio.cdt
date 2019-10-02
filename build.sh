@@ -59,8 +59,8 @@ else
          ;;
       "Debian GNU/Linux")
          export ARCH="Debian"
-	 bash ./scripts/eosio_build_ubuntu.sh
-	 ;;
+	       bash ./scripts/eosio_build_ubuntu.sh
+	       ;;
       *)
          printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
          exit 1
@@ -113,4 +113,4 @@ printf '║╚═╝║──║║──║╚═╝║║╚══╗║║║
 printf "╚═══╝──╚╝──╚═══╝╚═══╝╚╝╚═╝─╚╝╚╝─╚╝─╚╝──╚╝──\n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
-printf "\\tEOSIO website: https://eos.io\\n"
+printf "\\CyberWay website: https://cyberway.io\\n"
