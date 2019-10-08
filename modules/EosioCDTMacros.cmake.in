@@ -1,4 +1,4 @@
-if (NOT EOSIO_WASM_OLD_BEHAVIOR STREQUAL "On")
+if (NOT CYBERWAY_WASM_OLD_BEHAVIOR STREQUAL "On")
    macro(add_contract CONTRACT_NAME TARGET)
       add_executable( ${TARGET} ${ARGN} )
       target_compile_options( ${TARGET} PUBLIC -abigen )

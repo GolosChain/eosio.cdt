@@ -12,20 +12,20 @@ binaries=(eosio-ranlib
           eosio-cpp
           eosio-ld)
 
-if [ -d "/usr/local/eosio.cdt" ]; then
+if [ -d "/usr/local/cyberway.cdt" ]; then
    printf "\tDo you wish to remove this install? (requires sudo)\n"
    select yn in "Yes" "No"; do
       case $yn in
          [Yy]* )
             pushd /usr/local &> /dev/null
-            rm -rf eosio.cdt
+            rm -rf cyberway.cdt
             pushd bin &> /dev/null
             for binary in ${binaries[@]}; do
-               rm ${binary}
+               rm cyberway.${binary}
             done
             popd &> /dev/null
             pushd lib/cmake &> /dev/null
-            rm -rf eosio.cdt
+            rm -rf cyberway.cdt
             popd &> /dev/null
             break;;
          [Nn]* ) 
