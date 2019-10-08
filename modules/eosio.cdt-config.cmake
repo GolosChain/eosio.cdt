@@ -1,19 +1,43 @@
-if(EOSIO_CDT_ROOT STREQUAL "" OR NOT EOSIO_CDT_ROOT)
-   set(EOSIO_CDT_ROOT "@CDT_ROOT_DIR@")
+# For compatibility with EOSIO
+if(CYBERWAY_CDT_ROOT STREQUAL EOSIO_CDT_ROOT)
+   # do nothing
+elseif(EOSIO_CDT_ROOT AND (NOT EOSIO_CDT_ROOT STREQUAL ""))
+   if(CYBERWAY_CDT_ROOT AND (NOT CYBERWAY_CDT_ROOT STREQUAL ""))
+      message(FATAL_ERROR "CYBERWAY_CDT_ROOT and EOSIO_CDT_ROOT can't be set together")
+   else()
+      set(CYBERWAY_CDT_ROOT ${EOSIO_CDT_ROOT})
+   endif()
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt)
-if (NOT EOSIO_WASM_OLD_BEHAVIOR STREQUAL "Off")
-    set(EOSIO_WASM_OLD_BEHAVIOR "On")
-    include(EosioWasmToolchain)
+if(CYBERWAY_CDT_ROOT STREQUAL "" OR NOT CYBERWAY_CDT_ROOT)
+   set(CYBERWAY_CDT_ROOT "@CDT_ROOT_DIR@")
 endif()
 
-include(EosioCDTMacros)
+list(APPEND CMAKE_MODULE_PATH ${CYBERWAY_CDT_ROOT}/lib/cmake/cyberway.cdt)
+
+# For compatibility with EOSIO
+if(EOSIO_WASM_OLD_BEHAVIOR STREQUAL CYBERWAY_WASM_OLD_BEHAVIOR)
+   # do nothing
+elseif(EOSIO_WASM_OLD_BEHAVIOR AND (NOT EOSIO_WASM_OLD_BEHAVIOR STREQUAL ""))
+   if(CYBERWAY_WASM_OLD_BEHAVIOR AND (NOT CYBERWAY_WASM_OLD_BEHAVIOR STREQUAL ""))
+      message(FATAL_ERROR "CYBERWAY_CDT_ROOT and EOSIO_CDT_ROOT can't be set together")
+   else()
+      set(CYBERWAY_WASM_OLD_BEHAVIOR ${EOSIO_WASM_OLD_BEHAVIOR})
+   endif()
+endif()
+
+if (NOT CYBERWAY_WASM_OLD_BEHAVIOR STREQUAL "Off")
+    set(CYBERWAY_WASM_OLD_BEHAVIOR "On")
+    include(CyberwayWasmToolchain)
+endif()
+
+include(CyberwayCDTMacros)
   
 
 function(EXTRACT_MAJOR_MINOR_FROM_VERSION version success major minor)
    string(REGEX REPLACE "^([0-9]+)\\..+$" "\\1" _major "${version}")
    if("${_major}" STREQUAL "${version}")
+
       set(${success} FALSE PARENT_SCOPE)
       return()
    endif()
@@ -29,7 +53,7 @@ function(EXTRACT_MAJOR_MINOR_FROM_VERSION version success major minor)
    set(${success} TRUE      PARENT_SCOPE)
 endfunction(EXTRACT_MAJOR_MINOR_FROM_VERSION)
 
-function(EOSIO_CHECK_VERSION output version hard_min soft_max hard_max) # optional 6th argument for error message
+function(CYBERWAY_CHECK_VERSION output version hard_min soft_max hard_max) # optional 6th argument for error message
    set(${output} "INVALID" PARENT_SCOPE)
 
    EXTRACT_MAJOR_MINOR_FROM_VERSION("${version}" success major minor)
@@ -100,4 +124,11 @@ function(EOSIO_CHECK_VERSION output version hard_min soft_max hard_max) # option
    endif()
 
    set(${output} "MATCH" PARENT_SCOPE)
+endfunction(CYBERWAY_CHECK_VERSION)
+
+# For compatibility with EOSIO
+function(EOSIO_CHECK_VERSION output version hard_min soft_max hard_max)
+   CYBERWAY_CHECK_VERSION(__XXX_CYBEROUTPUT "${version}" "${hard_min}" "${soft_max}" "${hard_max}" ${ARGN})
+   set(${output} ${__XXX_CYBEROUTPUT} PARENT_SCOPE)
+   message(STATUS "${__XXX_CYBEROUTPUToutput}")
 endfunction(EOSIO_CHECK_VERSION)

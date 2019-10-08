@@ -7,7 +7,7 @@ macro(add_contract_with_abi TARGET ABIFILE)
    install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.abi DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET}/)
 endmacro()
 
-find_package(eosio.cdt)
+find_package(cyberway.cdt)
 
 if (FAIL_CASE)
     set(SECOND_PROVODER_NAME second.fail.pw)

@@ -7,7 +7,7 @@ macro(add_contract_with_abi TARGET ABIFILE)
    install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.abi DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET}/)
 endmacro()
 
-find_package(eosio.cdt)
+find_package(cyberway.cdt)
 
 ### Generate the wasm and abi
 add_contract_with_abi(receiver.ram receiver.ram.abi ${CMAKE_CURRENT_SOURCE_DIR}/receiver.ram.cpp)

@@ -94,11 +94,11 @@ if [ -z "$CMAKE" ]; then
   CMAKE=$( command -v cmake )
 fi
 
-"$CMAKE" ../
+"$CMAKE" -GNinja ../
 if [ $? -ne 0 ]; then
    exit -1;
 fi
-make -j${CORES}
+ninja -j${CORES}
 if [ $? -ne 0 ]; then
    exit -1;
 fi
@@ -113,4 +113,4 @@ printf '║╚═╝║──║║──║╚═╝║║╚══╗║║║
 printf "╚═══╝──╚╝──╚═══╝╚═══╝╚╝╚═╝─╚╝╚╝─╚╝─╚╝──╚╝──\n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
-printf "\\CyberWay website: https://cyberway.io\\n"
+printf "\\tCyberWay website: https://cyberway.io\\n"

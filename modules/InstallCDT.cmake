@@ -15,7 +15,7 @@ macro( eosio_clang_install_and_symlink file symlink )
       DESTINATION ${CDT_INSTALL_PREFIX}/bin
       PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
    install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin)")
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/${symlink})")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/cyberway.${symlink})")
 endmacro( eosio_clang_install_and_symlink )
 
 macro( eosio_tool_install file )
@@ -33,19 +33,22 @@ macro( eosio_tool_install_and_symlink file symlink )
       DESTINATION ${CDT_INSTALL_PREFIX}/bin
       PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
    install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin)")
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/${symlink})")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/cyberway.${symlink})")
 endmacro( eosio_tool_install_and_symlink )
 
 macro( eosio_cmake_install_and_symlink file symlink )
    set(BINARY_DIR ${CMAKE_BINARY_DIR}/modules)
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib/cmake/eosio.cdt)")
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/lib/cmake/eosio.cdt/${file} ${CMAKE_INSTALL_PREFIX}/lib/cmake/eosio.cdt/${symlink})")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt)")
+   install(FILES ${CMAKE_BINARY_DIR}/modules/${file} DESTINATION ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt
+      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib/cmake/cyberway.cdt)")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt/${file} ${CMAKE_INSTALL_PREFIX}/lib/cmake/cyberway.cdt/${symlink})")
 endmacro( eosio_cmake_install_and_symlink )
 
 macro( eosio_libraries_install)
    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib)
    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/include)
-   install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${CDT_INSTALL_PREFIX}/lib)
+   install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${CDT_INSTALL_PREFIX}/lib FILES_MATCHING PATTERN "*.a")
    install(DIRECTORY ${CMAKE_BINARY_DIR}/include/ DESTINATION ${CDT_INSTALL_PREFIX}/include)
 endmacro( eosio_libraries_install )
 
@@ -80,8 +83,12 @@ eosio_clang_install(../lib/LLVMEosioApply${CMAKE_SHARED_LIBRARY_SUFFIX})
 eosio_clang_install(../lib/LLVMEosioSoftfloat${CMAKE_SHARED_LIBRARY_SUFFIX})
 eosio_clang_install(../lib/eosio_plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-eosio_cmake_install_and_symlink(eosio.cdt-config.cmake eosio.cdt-config.cmake)
-eosio_cmake_install_and_symlink(EosioWasmToolchain.cmake EosioWasmToolchain.cmake)
-eosio_cmake_install_and_symlink(EosioCDTMacros.cmake EosioCDTMacros.cmake)
-
 eosio_libraries_install()
+
+eosio_cmake_install_and_symlink(cyberway.cdt-config.cmake cyberway.cdt-config.cmake)
+eosio_cmake_install_and_symlink(CyberwayCDTMacros.cmake CyberwayCDTMacros.cmake)
+eosio_cmake_install_and_symlink(CyberwayWasmToolchain.cmake CyberwayWasmToolchain.cmake)
+
+install(FILES ${CMAKE_BINARY_DIR}/eosio.imports DESTINATION ${CDT_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_BINARY_DIR}/licenses/ DESTINATION ${CDT_INSTALL_PREFIX}/license)
+
