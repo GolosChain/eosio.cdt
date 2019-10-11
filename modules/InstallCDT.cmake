@@ -15,7 +15,7 @@ macro( eosio_clang_install_and_symlink file symlink )
       DESTINATION ${CDT_INSTALL_PREFIX}/bin
       PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
    install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin)")
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/${symlink})")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/cyberway.${symlink})")
 endmacro( eosio_clang_install_and_symlink )
 
 macro( eosio_tool_install file )
@@ -33,13 +33,22 @@ macro( eosio_tool_install_and_symlink file symlink )
       DESTINATION ${CDT_INSTALL_PREFIX}/bin
       PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
    install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin)")
-   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/${symlink})")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/bin/${file} ${CMAKE_INSTALL_PREFIX}/bin/cyberway.${symlink})")
 endmacro( eosio_tool_install_and_symlink )
+
+macro( eosio_cmake_install_and_symlink file symlink )
+   set(BINARY_DIR ${CMAKE_BINARY_DIR}/modules)
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt)")
+   install(FILES ${CMAKE_BINARY_DIR}/modules/${file} DESTINATION ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt
+      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib/cmake/cyberway.cdt)")
+   install(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${CDT_INSTALL_PREFIX}/lib/cmake/cyberway.cdt/${file} ${CMAKE_INSTALL_PREFIX}/lib/cmake/cyberway.cdt/${symlink})")
+endmacro( eosio_cmake_install_and_symlink )
 
 macro( eosio_libraries_install)
    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib)
    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/include)
-   install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${CDT_INSTALL_PREFIX}/lib)
+   install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${CDT_INSTALL_PREFIX}/lib FILES_MATCHING PATTERN "*.a")
    install(DIRECTORY ${CMAKE_BINARY_DIR}/include/ DESTINATION ${CDT_INSTALL_PREFIX}/include)
 endmacro( eosio_libraries_install )
 
@@ -51,6 +60,7 @@ eosio_clang_install_and_symlink(llvm-objdump eosio-objdump)
 eosio_clang_install_and_symlink(llvm-readobj eosio-readobj)
 eosio_clang_install_and_symlink(llvm-readelf eosio-readelf)
 eosio_clang_install_and_symlink(llvm-strip eosio-strip)
+
 eosio_clang_install(opt)
 eosio_clang_install(llc)
 eosio_clang_install(lld)
@@ -58,6 +68,7 @@ eosio_clang_install(ld.lld)
 eosio_clang_install(ld64.lld)
 eosio_clang_install(clang-7)
 eosio_clang_install(wasm-ld)
+
 eosio_tool_install_and_symlink(eosio-pp eosio-pp)
 eosio_tool_install_and_symlink(eosio-wast2wasm eosio-wast2wasm)
 eosio_tool_install_and_symlink(eosio-wasm2wast eosio-wasm2wast)
@@ -67,7 +78,17 @@ eosio_tool_install_and_symlink(eosio-ld eosio-ld)
 eosio_tool_install_and_symlink(eosio-abigen eosio-abigen)
 eosio_tool_install_and_symlink(eosio-abidiff eosio-abidiff)
 eosio_tool_install_and_symlink(eosio-init eosio-init)
+
 eosio_clang_install(../lib/LLVMEosioApply${CMAKE_SHARED_LIBRARY_SUFFIX})
 eosio_clang_install(../lib/LLVMEosioSoftfloat${CMAKE_SHARED_LIBRARY_SUFFIX})
 eosio_clang_install(../lib/eosio_plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
+
 eosio_libraries_install()
+
+eosio_cmake_install_and_symlink(cyberway.cdt-config.cmake cyberway.cdt-config.cmake)
+eosio_cmake_install_and_symlink(CyberwayCDTMacros.cmake CyberwayCDTMacros.cmake)
+eosio_cmake_install_and_symlink(CyberwayWasmToolchain.cmake CyberwayWasmToolchain.cmake)
+
+install(FILES ${CMAKE_BINARY_DIR}/eosio.imports DESTINATION ${CDT_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_BINARY_DIR}/licenses/ DESTINATION ${CDT_INSTALL_PREFIX}/license)
+

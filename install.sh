@@ -55,7 +55,7 @@
       printf "Unable to enter build directory %s.\\n Exiting now.\\n" "${BUILD_DIR}"
       exit 1;
    fi
-   if ! make install; then
+   if ! ninja install; then
       printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing CyberWay has exited with the above error.\\n\\n"
       exit -1
    fi
