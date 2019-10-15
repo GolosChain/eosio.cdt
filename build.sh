@@ -59,8 +59,8 @@ else
          ;;
       "Debian GNU/Linux")
          export ARCH="Debian"
-	 bash ./scripts/eosio_build_ubuntu.sh
-	 ;;
+	       bash ./scripts/eosio_build_ubuntu.sh
+	       ;;
       *)
          printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
          exit 1
@@ -94,11 +94,11 @@ if [ -z "$CMAKE" ]; then
   CMAKE=$( command -v cmake )
 fi
 
-"$CMAKE" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
+"$CMAKE" -GNinja ../
 if [ $? -ne 0 ]; then
    exit -1;
 fi
-make -j${CORES}
+ninja -j${CORES}
 if [ $? -ne 0 ]; then
    exit -1;
 fi
@@ -113,4 +113,4 @@ printf '║╚═╝║──║║──║╚═╝║║╚══╗║║║
 printf "╚═══╝──╚╝──╚═══╝╚═══╝╚╝╚═╝─╚╝╚╝─╚╝─╚╝──╚╝──\n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
-printf "\\tEOSIO website: https://eos.io\\n"
+printf "\\tCyberWay website: https://cyberway.io\\n"

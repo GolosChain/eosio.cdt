@@ -18,4 +18,3 @@ if [[ "${IMAGETAG}" == "develop" ]]; then
     docker tag cyberway/cyberway.cdt:${IMAGETAG} cyberway/cyberway.cdt:latest
     docker push cyberway/cyberway.cdt:latest
 fi
-

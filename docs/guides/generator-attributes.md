@@ -55,12 +55,12 @@ This will mark this `class` as being an `EOSIO` contract, this allows for namesp
 #### [[eosio::on_notify("\<valid eosio account name\>::\<valid eosio action name\>")]]
 ```
 [[eosio::on_notify("eosio.token::transfer")]]
-void on_token_transfer(name from, name to, assert quantity, std::string memo) {
+void on_token_transfer(name from, name to, asset quantity, std::string memo) {
    do something on transfer from eosio.token...
 }
 
 [[eosio::on_notify("*::transfer")]]
-void on_any_transfer(name from, name to, assert quantity, std::string memo) {
+void on_any_transfer(name from, name to, asset quantity, std::string memo) {
    do something on transfer from any account...
 }
 ```
@@ -73,7 +73,7 @@ void some_function(...) {
 }
 ```
 
-This will mark an arbitrary function as an entry point, which will then wrap the function with global constructors (ctors) and global destructors (dtors).  This will allow for the eosio.cdt toolchain to produce WASM binaries for other ecosystems.
+This will mark an arbitrary function as an entry point, which will then wrap the function with global constructors (ctors) and global destructors (dtors).  This will allow for the cyberway.cdt toolchain to produce WASM binaries for other ecosystems.
 
 #### [[eosio::wasm_import]]
 ```

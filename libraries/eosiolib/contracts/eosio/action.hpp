@@ -33,10 +33,16 @@ namespace eosio {
          void require_auth( uint64_t name );
 
          __attribute__((eosio_wasm_import))
+         bool weak_require_auth( uint64_t name );
+
+         __attribute__((eosio_wasm_import))
          bool has_auth( uint64_t name );
 
          __attribute__((eosio_wasm_import))
          void require_auth2( uint64_t name, uint64_t permission );
+
+         __attribute__((eosio_wasm_import))
+         bool weak_require_auth2( uint64_t name, uint64_t permission );
 
          __attribute__((eosio_wasm_import))
          bool is_account( uint64_t name );
@@ -133,6 +139,17 @@ namespace eosio {
    }
 
    /**
+    *  Verifies that @ref name exists in the set of provided auths on a action.
+    *
+    *  @ingroup action
+    *  @param name - name of the account to be verified
+    *  @return true if @ref name exists in the set of provided auths
+    */
+   inline bool weak_require_auth( name n ) {
+      return internal_use_do_not_use::weak_require_auth( n.value );
+   }
+
+   /**
    *  Returns the time in microseconds from 1970 of the publication_time
    *
    *  @ingroup action
@@ -224,6 +241,17 @@ namespace eosio {
     */
    inline void require_auth( const permission_level& level ) {
       internal_use_do_not_use::require_auth2( level.actor.value, level.permission.value );
+   }
+
+   /**
+    *  Require the specified authorization for this action.
+    *
+    *  @ingroup action
+    *  @param level - Authorization to be required
+    *  @return true if action has the specified auth
+    */
+   inline bool weak_require_auth( const permission_level& level ) {
+      return internal_use_do_not_use::weak_require_auth2( level.actor.value, level.permission.value );
    }
 
    /**
@@ -412,7 +440,9 @@ namespace eosio {
       template <auto Action, typename... Ts>
       constexpr bool type_check() {
          static_assert(sizeof...(Ts) == std::tuple_size<deduced<Action>>::value);
-         return check_types<Action, 0, Ts...>::value;
+         if constexpr (sizeof...(Ts) != 0)
+            return check_types<Action, 0, Ts...>::value;
+         return true;
       }
 
       /// @endcond
@@ -425,7 +455,7 @@ namespace eosio {
     * Example:
     * @code
     * // defined by contract writer of the actions
-    * using transfer act = action_wrapper<"transfer"_n, &token::transfer>;( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+    * using transfer_act = action_wrapper<"transfer"_n, &token::transfer>;
     * // usage by different contract writer
     * transfer_act{"eosio.token"_n, {st.issuer, "active"_n}}.send(st.issuer, to, quantity, memo);
     * // or
@@ -450,6 +480,10 @@ namespace eosio {
       template <typename Code>
       constexpr action_wrapper(Code&& code, const eosio::permission_level& perm)
          : code_name(std::forward<Code>(code)), permissions({1, perm}) {}
+
+      template <typename Code>
+      constexpr action_wrapper(Code&& code)
+         : code_name(std::forward<Code>(code)) {}
 
       static constexpr eosio::name action_name = eosio::name(Name);
       eosio::name code_name;
