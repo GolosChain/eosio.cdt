@@ -270,7 +270,7 @@ class abigen : public generation_utils {
 
    std::string generate_json_comment() {
       std::stringstream ss;
-      ss << "This file was generated with eosio-abigen.";
+      ss << "This file was generated with cyberway-abigen.";
       ss << " DO NOT EDIT";
       return ss.str();
    }
@@ -487,9 +487,9 @@ class EosioRecordMatcher : public MatchFinder::MatchCallback {
 int main(int argc, const char **argv) {
 
    cl::SetVersionPrinter([](llvm::raw_ostream& os) {
-        os << "eosio-abigen version " << "${VERSION_FULL}" << "\n";
+        os << "cyberway-abigen version " << "${VERSION_FULL}" << "\n";
   });
-   cl::OptionCategory cat("eosio-abigen", "generates an abi from C++ project input");
+   cl::OptionCategory cat("cyberway-abigen", "generates an abi from C++ project input");
 
    cl::opt<std::string> abidir(
     "output",
