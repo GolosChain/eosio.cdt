@@ -83,6 +83,12 @@ namespace eosio { namespace cdt {
                      get_abigen_ref().add_type( field->getType() );
                   }
                }
+               if (decl->isEosioEvent() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
+                  get_abigen_ref().add_struct(decl);
+                  get_abigen_ref().add_event(decl);
+                  for (auto field : decl->fields())
+                     get_abigen_ref().add_type( field->getType() );
+               }
                if (decl->isEosioTable() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
                   get_abigen_ref().add_struct(decl);
                   get_abigen_ref().add_table(decl);

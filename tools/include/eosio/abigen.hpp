@@ -98,6 +98,20 @@ namespace eosio { namespace cdt {
          _abi.actions.insert(ret);
       }
 
+      void add_event( const clang::CXXRecordDecl* decl ) {
+         abi_event t;
+         t.type = decl->getNameAsString();
+         auto event_name = decl->getEosioEventAttr()->getName();
+         if (!event_name.empty()) {
+            try {
+               validate_name( event_name.str(), error_handler );
+            } catch (...) {
+            }
+            t.name = event_name.str();
+         }
+         _abi.events.insert(t);
+      }
+
       void add_tuple(const clang::QualType& type) {
          auto pt = llvm::dyn_cast<clang::ElaboratedType>(type.getTypePtr());
          auto tst = llvm::dyn_cast<clang::TemplateSpecializationType>((pt) ? pt->desugar().getTypePtr() : type.getTypePtr());
@@ -298,6 +312,13 @@ namespace eosio { namespace cdt {
          return o;
       }
 
+      ojson event_to_json( const abi_event& e ) {
+         ojson o;
+         o["name"] = e.name;
+         o["type"] = e.type;
+         return o;
+      }
+
       ojson table_to_json( const abi_table& t ) {
          ojson o;
          o["name"] = t.name;
@@ -326,7 +347,7 @@ namespace eosio { namespace cdt {
             set_of_tables.insert(t);
          }
 
-         return _abi.structs.empty() && _abi.typedefs.empty() && _abi.actions.empty() && set_of_tables.empty() && _abi.variants.empty();
+         return _abi.structs.empty() && _abi.typedefs.empty() && _abi.actions.empty() && _abi.events.empty() && set_of_tables.empty() && _abi.variants.empty();
       }
 
       ojson to_json() {
@@ -388,6 +409,10 @@ namespace eosio { namespace cdt {
                if (as.name == _translate_type(a.type))
                   return true;
             }
+            for ( auto a : _abi.events ) {
+               if (as.name == _translate_type(a.type))
+                  return true;
+            }
             for( auto t : set_of_tables ) {
                if (as.name == _translate_type(t.type))
                   return true;
@@ -420,6 +445,9 @@ namespace eosio { namespace cdt {
             for ( auto a : _abi.actions )
                if ( a.type == td.new_type_name )
                   return true;
+            for ( auto a : _abi.events )
+               if ( a.type == td.new_type_name )
+                  return true;
             for ( auto _td : _abi.typedefs )
                if ( remove_suffix(_td.type) == td.new_type_name )
                   return true;
@@ -438,6 +466,10 @@ namespace eosio { namespace cdt {
          o["actions"]     = ojson::array();
          for ( auto a : _abi.actions ) {
             o["actions"].push_back(action_to_json( a ));
+         }
+         o["events"]     = ojson::array();
+         for ( auto a : _abi.events ) {
+            o["events"].push_back(event_to_json( a ));
          }
          o["tables"]     = ojson::array();
          for ( auto t : set_of_tables ) {
