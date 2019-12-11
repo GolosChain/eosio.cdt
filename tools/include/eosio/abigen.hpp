@@ -102,10 +102,21 @@ namespace eosio { namespace cdt {
          abi_event t;
          t.type = decl->getNameAsString();
          auto event_name = decl->getEosioEventAttr()->getName();
-         if (!event_name.empty()) {
+         if (event_name.empty()) {
+            auto struct_name = t.type;
+            auto postfix = struct_name.rfind("_event");
+            if (postfix != std::string::npos) struct_name.resize(postfix);
+            try {
+               validate_name( struct_name, error_handler );
+            } catch (...) {
+               std::cout << "Error, name <" << struct_name << "> is an invalid EOSIO name.\n";
+            }
+            t.name = struct_name;
+         } else {
             try {
                validate_name( event_name.str(), error_handler );
             } catch (...) {
+               std::cout << "Error, name <" << event_name.str() << "> is an invalid EOSIO name.\n";
             }
             t.name = event_name.str();
          }
