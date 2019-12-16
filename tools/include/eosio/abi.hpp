@@ -35,12 +35,24 @@ struct abi_event {
    bool operator<(const abi_event& s) const { return name < s.name; }
 };
 
+struct abi_order {
+   std::string field;
+   std::string order;
+   // No operator because orders should have insertion order
+};
+
+struct abi_index {
+   std::string name;
+   bool unique = false;
+   std::vector<abi_order> orders;
+   bool operator<(const abi_index& i) const { return name < i.name; }
+};
+
 struct abi_table {
    std::string name;
    std::string type;
-   std::string index_type;
-   std::vector<std::string> key_names;
-   std::vector<std::string> key_types;
+   std::string scope_type;
+   std::vector<abi_index> indexes;
    bool operator<(const abi_table& t) const { return name < t.name; }
 };
 

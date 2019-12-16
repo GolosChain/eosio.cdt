@@ -94,12 +94,26 @@ class ABIMerger {
          return a["name"] == b["name"];
       }
 
+      static inline bool optional_is_same(ojson a, ojson b, const ojson::string_view_type& name) {
+         return (!a.has_key(name)) ? (!b.has_key(name)) : (b.has_key(name) && a[name] == b[name]);
+      }
+
       static bool table_is_same(ojson a, ojson b) {
+         if (a["indexes"].size() != b["indexes"].size())
+            return false;
+         for (auto a_index : a["indexes"].array_range()) {
+            bool found_index = false;
+            for (auto b_index : b["indexes"].array_range()) {
+               if (a_index["name"] == b_index["name"] &&
+                   a_index["unique"] == b_index["unique"] &&
+                   a_index["orders"] == b_index["orders"])
+                  found_index = true;
+            }
+            if (!found_index) return false;
+         }
          return a["name"] == b["name"] &&
                 a["type"] == b["type"] &&
-                a["index_type"] == b["index_type"] &&
-                a["key_names"] == b["key_names"] &&
-                a["key_types"] == b["key_types"];
+                optional_is_same(a, b, "scope_type");
       }
       
       template <typename F>

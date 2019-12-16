@@ -42,7 +42,7 @@ using namespace eosio::cdt;
 namespace eosio { namespace cdt {
    DeclarationMatcher function_decl_matcher = cxxMethodDecl().bind("eosio_tool");
    DeclarationMatcher record_decl_matcher   = cxxRecordDecl().bind("eosio_tool");
-   DeclarationMatcher typedef_decl_matcher  = typedefDecl().bind("eosio_tool");
+   DeclarationMatcher typedef_decl_matcher  = typedefNameDecl().bind("eosio_tool");
    auto               class_tmp_matcher     = classTemplateSpecializationDecl().bind("eosio_tool");
    abigen_exception  abigen_ex;
    codegen_exception codegen_ex;
@@ -105,6 +105,25 @@ namespace eosio { namespace cdt {
             }
          }
    };
+
+   class EosioTypedefMatcher : public MatchFinder::MatchCallback {
+      public:
+         virtual void run( const MatchFinder::MatchResult& res ) {
+            if (const auto* decl = res.Nodes.getNodeAs<clang::TypedefNameDecl>("eosio_tool"))
+            if (const auto* type = decl->getTypeForDecl()) {
+               if (const auto* templ = type->getAs<TemplateSpecializationType>()) {
+                  const auto& type_name = templ->getTemplateName().getAsTemplateDecl()->getNameAsString();
+                  if (type_name == "indexed_by" && decl->hasEosioOrders()) {
+                     get_abigen_ref().add_index(decl, templ);
+                  } else if (type_name == "multi_index" && decl->hasEosioOrders()) {
+                     get_abigen_ref().add_table(decl, templ);
+                  } else if (type_name == "singleton") {
+                     get_abigen_ref().add_table(decl, templ, true);
+                  }
+               }
+            }
+         }
+   };
 }} // ns eosio::cdt
 
 void generate(const std::vector<std::string>& base_options, std::string input, std::string contract_name, const std::vector<std::string>& resource_paths, bool abigen) {
@@ -134,10 +153,12 @@ void generate(const std::vector<std::string>& base_options, std::string input, s
 
    EosioMethodMatcher eosio_method_matcher;
    EosioRecordMatcher eosio_record_matcher;
+   EosioTypedefMatcher eosio_typedef_matcher;
    MatchFinder finder;
 
    finder.addMatcher(function_decl_matcher, &eosio_method_matcher);
    finder.addMatcher(record_decl_matcher, &eosio_record_matcher);
+   finder.addMatcher(typedef_decl_matcher, &eosio_typedef_matcher);
    finder.addMatcher(class_tmp_matcher, &eosio_record_matcher);
 
    int tool_run = -1;
