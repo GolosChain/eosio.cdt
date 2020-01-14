@@ -112,12 +112,25 @@ struct generation_utils {
       return {};
    }
 
+   static inline std::string find_contract(const clang::Decl* decl, const std::string& cn) {
+      std::string name = "";
+      for (auto* attr: decl->getAttrs()) {
+         if (auto* ec = llvm::dyn_cast<clang::EosioContractAttr>(attr)) {
+           auto str = ec->getName().str();
+           if (str.empty()) continue;
+           name = str;
+           if (name == cn) break;
+         }
+      }
+      return name;
+   }
+
    static inline bool is_eosio_contract( const clang::CXXMethodDecl* decl, const std::string& cn ) {
       std::string name = "";
       if (decl->isEosioContract())
-         name = decl->getEosioContractAttr()->getName();
+         name = find_contract(decl, cn);
       else if (decl->getParent()->isEosioContract())
-         name = decl->getParent()->getEosioContractAttr()->getName();
+         name = find_contract(decl->getParent(), cn);
       if (name.empty()) {
          name = decl->getParent()->getName().str();
       }
@@ -128,11 +141,24 @@ struct generation_utils {
       std::string name = "";
       auto pd = llvm::dyn_cast<clang::CXXRecordDecl>(decl->getParent());
       if (decl->isEosioContract()) {
-         auto nm = decl->getEosioContractAttr()->getName().str();
+         auto nm = find_contract(decl, cn);
          name = nm.empty() ? decl->getName().str() : nm;
       }
       else if (pd && pd->isEosioContract()) {
-         auto nm = pd->getEosioContractAttr()->getName().str();
+         auto nm = find_contract(pd, cn);
+         name = nm.empty() ? pd->getName().str() : nm;
+      }
+      return cn == name;
+   }
+
+   static inline bool is_eosio_contract( const clang::TypedefNameDecl* decl, const std::string& cn ) {
+      std::string name = "";
+      auto dc = decl->getDeclContext();
+      if (decl->hasEosioContracts()) {
+         name = find_contract(decl, cn);
+      }
+      else if (dc) if (auto pd = llvm::dyn_cast<clang::CXXRecordDecl>(dc)) if (pd->isEosioContract()) {
+         auto nm = find_contract(pd, cn);
          name = nm.empty() ? pd->getName().str() : nm;
       }
       return cn == name;

@@ -93,12 +93,49 @@ class ABIMerger {
          return a["name"] == b["name"];
       }
 
+      static inline bool optional_is_same(ojson a, ojson b, const ojson::string_view_type& name) {
+         return (!a.has_key(name)) ? (!b.has_key(name)) : (b.has_key(name) && a[name] == b[name]);
+      }
+
+      static bool orders_are_same(ojson a_orders, ojson b_orders) {
+         if (a_orders.size() != b_orders.size())
+            return false;
+         for (auto a : a_orders.array_range()) {
+            bool found = false;
+            for (auto b : b_orders.array_range()) {
+               if (a["field"] == b["field"] &&
+                   a["order"] == b["order"])
+                  found = true;
+            }
+            if (!found) return false;
+         }
+         return true;
+      }
+
+      static bool indexes_are_same(ojson a_indexes, ojson b_indexes) {
+         if (a_indexes.size() != b_indexes.size())
+            return false;
+         for (auto a : a_indexes.array_range()) {
+            bool found = false;
+            for (auto b : b_indexes.array_range()) {
+               if (a["name"] == b["name"] &&
+                   a["unique"] == b["unique"] &&
+                   orders_are_same(a["orders"], b["orders"]))
+                  found = true;
+            }
+            if (!found) return false;
+         }
+         return true;
+      }
+
       static bool table_is_same(ojson a, ojson b) {
+         if (a["indexes"].size() != b["indexes"].size())
+            return false;
+         if (!indexes_are_same(a["indexes"], b["indexes"]))
+            return false;
          return a["name"] == b["name"] &&
                 a["type"] == b["type"] &&
-                a["index_type"] == b["index_type"] &&
-                a["key_names"] == b["key_names"] &&
-                a["key_types"] == b["key_types"];
+                optional_is_same(a, b, "scope_type");
       }
       
       template <typename F>

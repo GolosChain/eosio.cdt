@@ -170,11 +170,14 @@ namespace eosio { namespace cdt {
          _abi.structs.insert(kv);
       }
 
-      void add_struct( const clang::CXXRecordDecl* decl, const std::string& rname="" ) {
+      void add_struct( const clang::CXXRecordDecl* decl, const std::string& rname="", bool add_id = false ) {
          abi_struct ret;
          if ( decl->getNumBases() == 1 ) {
             ret.base = get_type(decl->bases_begin()->getType());
             add_type(decl->bases_begin()->getType());
+         }
+         if (add_id) {
+            ret.fields.push_back({"id", "uint64"});
          }
          for ( auto field : decl->fields() ) {
             if ( field->getName() == "transaction_extensions") {
@@ -208,8 +211,65 @@ namespace eosio { namespace cdt {
          _abi.structs.insert(new_struct);
       }
 
-      std::string to_index_type( std::string t ) {
-         return "i64";
+      std::string get_template_arg_as_name(const clang::Decl* decl, size_t arg_idx = 0) {
+         const auto* im = clang::dyn_cast<clang::ClassTemplateSpecializationDecl>(decl);
+         auto name_raw = im->getTemplateArgs()[arg_idx].getAsIntegral().getExtValue();
+         return name_to_string(name_raw);
+      }
+
+      void add_index(const clang::TypedefNameDecl* decl, const clang::TemplateSpecializationType* templ, std::string idx_name = "") {
+         abi_index idx;
+         if (!idx_name.empty()) {
+            idx.name = idx_name;
+         } else {
+            const auto* rec = clang::dyn_cast<clang::RecordType>(templ->desugar())->getDecl();
+            idx.name = get_template_arg_as_name(rec);
+         }
+
+         idx.unique = !decl->hasEosioNonUnique();
+
+         for (auto* attr: decl->getAttrs()) {
+            if (auto* order = llvm::dyn_cast<clang::EosioOrderAttr>(attr)) {
+               // Clang provides attributes in reversed order, so insert to front
+               idx.orders.insert(idx.orders.begin(), abi_order{order->getField(), order->getOrder()});
+            }
+         }
+
+         indexes[idx.name] = idx;
+      }
+
+      void add_table(const clang::TypedefNameDecl* decl, const clang::TemplateSpecializationType* templ, bool is_singleton = false) {
+         if (!abigen::is_eosio_contract(decl, get_contract_name()))
+            return;
+
+         abi_table t;
+         t.name = get_template_arg_as_name(clang::dyn_cast<clang::RecordType>(templ->desugar())->getDecl());
+
+         const auto* structure = templ->getArg(1).getAsType().getTypePtr()->getAsCXXRecordDecl();
+         add_struct(structure, "", is_singleton);
+         t.type = structure->getNameAsString();
+
+         if (decl->hasEosioScopeType()) {
+            t.scope_type = decl->getEosioScopeType();
+         }
+
+         if (!is_singleton) {
+            add_index(decl, templ, "primary");
+            t.indexes.push_back(indexes["primary"]);
+
+            for (int i = 2; i < templ->getNumArgs(); ++i) {
+               const auto& idx_name = get_template_arg_as_name(templ->getArg(i).getAsType().getTypePtr()->getAsCXXRecordDecl());
+               t.indexes.push_back(indexes[idx_name]);
+            }
+         } else {
+            abi_index idx;
+            idx.name = "primary";
+            idx.unique = true;
+            idx.orders.push_back(abi_order{"id", "asc"});
+            t.indexes.push_back(idx);
+         }
+
+         ctables.insert(t);
       }
 
       void add_table( const clang::CXXRecordDecl* decl ) {
@@ -334,11 +394,24 @@ namespace eosio { namespace cdt {
          ojson o;
          o["name"] = t.name;
          o["type"] = t.type;
-         o["index_type"] = "i64";
-         o["key_names"] = ojson::array();
-         o["key_types"] = ojson::array();
-         return o;
-      }
+         if (t.scope_type.size())
+            o["scope_type"] = t.scope_type;
+         o["indexes"] = ojson::array();
+         for ( auto& index : t.indexes ) {
+            ojson i;
+            i["name"] = index.name;
+            i["unique"] = index.unique;
+            i["orders"] = ojson::array();
+            for ( auto& order : index.orders ) {
+               ojson ord;
+               ord["field"] = order.field;
+               ord["order"] = order.order;
+               i["orders"].push_back(ord);
+            }
+            o["indexes"].push_back(i);
+         }
+          return o;
+       }
       
       bool is_empty() {
          std::set<abi_table> set_of_tables;
@@ -496,6 +569,7 @@ namespace eosio { namespace cdt {
 
       private: 
          abi                                   _abi;
+         std::map<std::string, abi_index>    indexes;
          std::set<const clang::CXXRecordDecl*> tables;
          std::set<abi_table>                   ctables;
          std::map<std::string, std::string>    rcs;
