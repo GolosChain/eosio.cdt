@@ -30,7 +30,7 @@ class ABIMerger {
          ret["types"]    = merge_types(other);
          ret["structs"]  = merge_structs(other);
          ret["actions"]  = merge_actions(other);
-         ret["events"]  = merge_events(other);
+         ret["events"]   = merge_events(other);
          ret["tables"]   = merge_tables(other);
          ret["variants"] = merge_variants(other);
          return ret;
@@ -104,8 +104,10 @@ class ABIMerger {
             bool found = false;
             for (auto b : b_orders.array_range()) {
                if (a["field"] == b["field"] &&
-                   a["order"] == b["order"])
+                   a["order"] == b["order"]) {
                   found = true;
+                  break;
+               }
             }
             if (!found) return false;
          }
@@ -120,8 +122,10 @@ class ABIMerger {
             for (auto b : b_indexes.array_range()) {
                if (a["name"] == b["name"] &&
                    a["unique"] == b["unique"] &&
-                   orders_are_same(a["orders"], b["orders"]))
+                   orders_are_same(a["orders"], b["orders"])) {
                   found = true;
+                  break;
+               }
             }
             if (!found) return false;
          }
@@ -129,8 +133,6 @@ class ABIMerger {
       }
 
       static bool table_is_same(ojson a, ojson b) {
-         if (a["indexes"].size() != b["indexes"].size())
-            return false;
          if (!indexes_are_same(a["indexes"], b["indexes"]))
             return false;
          return a["name"] == b["name"] &&
