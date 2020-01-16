@@ -256,12 +256,12 @@ namespace eosio { namespace cdt {
                   clang::LangOptions lang_opts;
                   lang_opts.CPlusPlus = true;
                   clang::PrintingPolicy policy(lang_opts);
+                  policy.Bool = 1;
                   auto qt = param->getOriginalType().getNonReferenceType();
                   qt.removeLocalConst();
                   qt.removeLocalVolatile();
                   qt.removeLocalRestrict();
                   std::string tn = clang::TypeName::getFullyQualifiedName(qt, *(cg.ast_context), policy);
-                  tn = tn == "_Bool" ? "bool" : tn; // TODO look out for more of these oddities
                   ss << tn << " arg" << i << "; ds >> arg" << i << ";\n";
                   i++;
                }
