@@ -210,10 +210,11 @@ class abidiff {
             bool found = false;
             for ( int j=0; j < abi2["indexes"].size(); j++ ) {
                if (abi1["indexes"].at(i)["name"] == abi2["indexes"].at(j)["name"]) {
-                  if (abi1["indexes"].at(i)["unique"] != abi2["indexes"].at(j)["unique"])
+                  if (abi1["indexes"].at(i)["unique"].as_string() != abi2["indexes"].at(j)["unique"].as_string()) {
                      break;
+                  }
                   find_orders(abi1["indexes"].at(i), abi2["indexes"].at(j), '<');
-                  find_orders(abi1["indexes"].at(i), abi2["indexes"].at(j), '>');
+                  find_orders(abi2["indexes"].at(j), abi1["indexes"].at(i), '>');
                   found = true;
                }
             }
@@ -235,7 +236,7 @@ class abidiff {
                   if (abi1["tables"].at(i)["type"] != abi2["tables"].at(j)["type"])
                      break;
                   find_indexes(abi1["tables"].at(i), abi2["tables"].at(j), '<');
-                  find_indexes(abi1["tables"].at(i), abi2["tables"].at(j), '>');
+                  find_indexes(abi2["tables"].at(j), abi1["tables"].at(i), '>');
                   found = true;
                }
             }
