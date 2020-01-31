@@ -2,18 +2,16 @@
 set -euo pipefail
 
 REVISION=$(git rev-parse HEAD)
-MASTER_REVISION=$(git rev-parse origin/master)
-DEVELOP_REVISION=$(git rev-parse origin/develop)
 
 docker images
 
 docker login -u=$DHUBU -p=$DHUBP
 
-if [[ "${REVISION}" == "${MASTER_REVISION}" ]]; then
+if [[ ${BUILDKITE_BRANCH} == "master" ]]; then
     TAG=stable
-elif [[ "${REVISION}" == "${DEVELOP_REVISION}" ]]; then
+elif [[ ${BUILDKITE_BRANCH} == "develop" ]]; then
     TAG=latest
-else 
+else
     TAG=${BUILDKITE_BRANCH}
 fi
 
