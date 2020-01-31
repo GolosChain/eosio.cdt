@@ -186,21 +186,6 @@ class abidiff {
          std::cout << pretty_print(abi["orders"].at(index)) << "\n";
       }
 
-      void find_orders(const ojson& abi1, const ojson& abi2, char direction) {
-         for ( int i=0; i < abi1["orders"].size(); i++ ) {
-            bool found = false;
-            for ( int j=0; j < abi2["orders"].size(); j++ ) {
-               if (abi1["orders"].at(i)["field"] == abi2["orders"].at(j)["field"]) {
-                  if (abi1["orders"].at(i)["order"] != abi2["orders"].at(j)["order"])
-                     break;
-                  found = true;
-               }
-            }
-            if (!found)
-               print_order(abi1, i, direction);
-         }
-      }
-
       void print_index(const ojson& abi, int index, char direction) {
          std::cout << direction << " index\n";
          std::cout << pretty_print(abi["indexes"].at(index)) << "\n";
@@ -214,9 +199,17 @@ class abidiff {
                   if (abi1["indexes"].at(i)["unique"].as_string() != abi2["indexes"].at(j)["unique"].as_string()) {
                      break;
                   }
-                  find_orders(abi1["indexes"].at(i), abi2["indexes"].at(j), '<');
-                  find_orders(abi2["indexes"].at(j), abi1["indexes"].at(i), '>');
+
+                  if (abi1["indexes"].at(i)["orders"].size() != abi2["indexes"].at(j)["orders"].size())
+                     break;
                   found = true;
+                  for (int k=0; k < abi1["indexes"].at(i)["orders"].size(); k++) {
+                     if (abi1["indexes"].at(i)["orders"].at(k)["field"] != abi2["indexes"].at(j)["orders"].at(k)["field"] ||
+                         abi1["indexes"].at(i)["orders"].at(k)["order"] != abi2["indexes"].at(j)["orders"].at(k)["order"]) {
+                        found = false;
+                        break;
+                     }
+                  }
                }
             }
             if (!found)
