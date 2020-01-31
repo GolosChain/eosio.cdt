@@ -1,16 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGETAG=${BUILDKITE_BRANCH:-master}
+REVISION=$(git rev-parse HEAD)
+MASTER_REVISION=$(git rev-parse origin/master)
 
-VERSION=$(git rev-parse HEAD)
-
-if [[ "${IMAGETAG}" == "master" ]]; then
+if [[ "${REVISION}" == ${MASTER_REVISION} ]]; then
     BUILDTYPE="stable"
-elif [[ "${IMAGETAG}" == "alfa" ]]; then
-    BUILDTYPE="alfa"
 else
     BUILDTYPE="latest"
 fi
 
-docker build -t cyberway/cyberway.cdt:${IMAGETAG} --build-arg version=${VERSION} --build-arg buildtype=${BUILDTYPE} -f docker/Dockerfile .
+BUILDER_TAG=${BUILDER_TAG:-$BUILDTYPE}
+
+docker build -t cyberway/cyberway.cdt:${REVISION} --build-arg version=${REVISION} --build-arg buildtype=${BUILDER_TAG} -f docker/Dockerfile .
