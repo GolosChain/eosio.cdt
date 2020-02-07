@@ -5,7 +5,7 @@
 
 namespace eosio {
   /**
-   *  @defgroup time
+   *  @defgroup time Time
    *  @ingroup core
    *  @brief Classes for working with time.
    */

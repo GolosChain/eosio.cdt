@@ -38,11 +38,52 @@ static constexpr primary_key_t end_primary_key = static_cast<primary_key_t>(-1);
 static constexpr primary_key_t unset_primary_key = static_cast<primary_key_t>(-2);
 
 namespace internal_use_do_not_use {
+
    extern "C" {
+
+/**
+ * @defgroup chaindb_medods ChainDB metods
+ * @ingroup contracts
+ * @brief Methods used for interaction between CyberWay platform and ChainDB
+ *
+ */
+
+
+/**
+ * @brief The method is used to set an iterator to the end of the container
+ * @ingroup chaindb_medods
+ *
+ * @returns Returns an iterator to the element following the last element of the container. This element acts like a placeholder; attempting to access it results in undefined behavior
+ */
       __attribute__((eosio_wasm_import))
       cursor_t chaindb_begin(account_name_t, scope_t, table_name_t, index_name_t);
+
+/**
+ * @brief The method is used to set an iterator to the end of the container
+ * @ingroup chaindb_medods
+ * // @ param account_name_t - code 
+ * // @ param scope_t - scope 
+ * // @ param table_name_t - table 
+ * // @ param index_name_t - index 
+ *
+ * @returns Returns an iterator to the element following the last element of the container. This element acts like a placeholder; attempting to access it results in undefined behavior
+ */
       __attribute__((eosio_wasm_import))
       cursor_t chaindb_end(account_name_t, scope_t, table_name_t, index_name_t);
+
+/**
+ * @brief The method is used to set an iterator to the first element of the container
+ * @ingroup chaindb_medods
+ * // @ param account_name_t - code 
+ * // @ param scope_t - scope 
+ * // @ param table_name_t - table 
+ * // @ param index_name_t - index 
+ * // @ param key - key
+ * // @ param int32_t - cursor
+ *
+ * @returns Iterator pointing to the first element that is not less than key. If no such element is found, a past-the-end iterator is returned
+ * @sa chaindb_end
+ */
       __attribute__((eosio_wasm_import))
       cursor_t chaindb_lower_bound(account_name_t, scope_t, table_name_t, index_name_t, void* key, int32_t);
       __attribute__((eosio_wasm_import))
@@ -85,6 +126,9 @@ namespace internal_use_do_not_use {
 
       __attribute__((eosio_wasm_import))
       void chaindb_ram_state(account_name_t, scope_t, table_name_t, primary_key_t, int32_t);
+/* *
+ * @}
+ */
    }
 }
 

@@ -1,11 +1,17 @@
-## Native Tester/Compilation
-As of v1.5.0 native compilation can be performed and a new set of libraries to facilitate native testing and native "scratch pad" compilation.  `eosio-cc\cpp` and `eosio-ld` now support building "smart contracts" and unit tests natively for quick tests to help facilitate faster development \(note the default implementations of eosio `intrinsics` are currently asserts that state they are unavailable, these are user definable.\)
+ \defgroup native-tester Native Tester
+ \ingroup md_guides
 
-#### Getting Started
-Once you have your smart contract written then a test source file can be written.
+# Native Tester/Compilation
+
+As of v1.5.0 native compilation can be performed and a new set of libraries to facilitate native testing and native "scratch pad" compilation. *cyberway.eosio-cc*, *cyberway.eosio-cpp* and *cyberway.eosio-ld* now support building "smart contracts" and unit tests natively for quick tests to help facilitate faster development \(note the default implementations of eosio *intrinsics* are currently asserts that state they are unavailable, these are user definable\).
+
+### Getting Started
+
+Once a smart contract has been written then a test source file can be written.
 
 `hello.hpp`
-```c++ 
+
+```cpp 
 #include <eosio/eosio.hpp>
 
 using namespace eosio;
@@ -22,8 +28,9 @@ CONTRACT hello : public eosio::contract {
 ```
 
 and then a quick test
-`hello_test.cpp`
-```c++
+*hello_test.cpp*
+
+```cpp
 #include <eosio/eosio.hpp>
 #include <eosio/tester.hpp>
 
@@ -88,32 +95,32 @@ int main(int argc, char** argv) {
 }
 ```
 
-Every `intrinsic` that is defined for eosio (prints, require_auth, etc.) is redefinable given the `intrinsics::set_intrinsics<intrinsics::the_intrinsic_name>()` functions.  These take a lambda whose arguments and return type should match that of the intrinsic you are trying to define.  This gives the contract writer the flexibility to modify behavior to suit the unit test being written. A sister function `intrinsics::get_intrinsics<intrinsics::the_intrinsic_name>()` will return the function object that currently defines the behavior for said intrinsic.  This pattern can be used to mock functionality and allow for easier testing of smart contracts.  For more information please see, either the `./tests` directory or `./examples/hello/tests/hello_test.cpp` for working examples.
+Every *intrinsic* that is defined for eosio (prints, require_auth, etc.) is redefinable given the *intrinsics::set_intrinsics<intrinsics::the_intrinsic_name>()* functions.  These take a lambda whose arguments and return type should match that of the intrinsic you are trying to define.  This gives the contract writer the flexibility to modify behavior to suit the unit test being written. A sister function *intrinsics::get_intrinsics<intrinsics::the_intrinsic_name>()* will return the function object that currently defines the behavior for said intrinsic.  This pattern can be used to mock functionality and allow for easier testing of smart contracts.  For more information please see, either the "./tests" directory or "./examples/hello/tests/hello_test.cpp" for working examples.
 
 ### Compiling Native Code
-- Raw `eosio-cpp` to compile the test or program the only addition needed to the command line is to add the flag `-fnative` this will then generate native code instead of `wasm` code.
-- Via CMake
-    - `add_native_library` and `add_native_executable` CMake macros have been added (these are a drop in replacement for add_library and add_executable).
+- Raw *eosio-cpp* to compile the test or program the only addition needed to the command line is to add the flag *-fnative* this will then generate native code instead of *wasm* code.
+- Via CMake:
+    - *add_native_library* and *add_native_executable* CMake macros have been added (these are a drop in replacement for add_library and add_executable).
 
 ### Eosio.CDT Native Tester API
 - CHECK_ASSERT(...) : This macro will check whether a particular assert has occured and flag the tests as failed but allow the rest of the tests to run.  
     - This is called either by 
-        - `CHECK_ASSERT("<assert message>", [](<args>){ whatever_function(<args>); })`
-        - `CHECK_ASSERT([](std::string msg){ user defined comparison function }, [](<args>){ whatever_function(<args>); })`
+        - *CHECK_ASSERT("<assert message>", [](\<args\>){ whatever_function(\<args\>); })*
+        - *CHECK_ASSERT([](std::string msg){ user defined comparison function }, [](\<args\>){ whatever_function(\<args>\); })*
 - CHECK_PRINT(...) : This macro will check whether the print buffer holds the string that is expected and flag the tests as failed but allow the rest of the test to run.
     - This is called either by 
-        - `CHECK_PRINT("<print message>", [](<args>){ whatever_function(<args>); })`
-        - `CHECK_PRINT([](std::string print_buffer){ user defined comparison function }, [](<args>){ whatever_function(<args>); })`
+        - *CHECK_PRINT("<print message>", [](\<args\>){ whatever_function(\<args\>); })*
+        - *CHECK_PRINT([](std::string print_buffer){ user defined comparison function }, [](\<args\>){ whatever_function(\<args\>); })*
 - CHECK_EQUAL(X, Y) : This macro will check whether two inputs equal eachother and fail the test but allow the rest of the test to continue.
 - REQUIRE_ASSERT(...) : This macro will check whether a particular assert has occured and flag the tests as failed and halt the test on failure.  
     - This is called either by 
-        - `REQUIRE_ASSERT("<assert message>", [](<args>){ whatever_function(<args>); })`
-        - `REQUIRE_ASSERT([](std::string msg){ user defined comparison function }, [](<args>){ whatever_function(<args>); })`
+        - *REQUIRE_ASSERT("<assert message>", [](\<args\>){ whatever_function(\<args\>); })*
+        - *REQUIRE_ASSERT([](std::string msg){ user defined comparison function }, [](\<args\>){ whatever_function(\<args\>); })*
 - REQUIRE_PRINT(...) : This macro will check whether the print buffer holds the string that is expected and flag the tests as failed and halt the test on failure.
     - This is called either by 
-        - `REQUIRE_PRINT("<print message>", [](<args>){ whatever_function(<args>); })`
-        - `REQUIRE_PRINT([](std::string print_buffer){ user defined comparison function }, [](<args>){ whatever_function(<args>); })`
-- REQUIRE_EQUAL(X, Y) : This macro will check whether two inputs `X` and `Y` equal eachother and fail the test and halt the test on failure.
-- EOSIO_TEST_BEGIN(X) : This macro defines the beginning of a unit test and assigns `X` as the symbolic name of that test.
+        - *REQUIRE_PRINT("<print message>", [](\<args\>){ whatever_function(\<args\>); })*
+        - *REQUIRE_PRINT([](std::string print_buffer){ user defined comparison function }, [](\<args\>){ whatever_function(\<args\>); })*
+- REQUIRE_EQUAL(X, Y) : This macro will check whether two inputs *X* and *Y* equal eachother and fail the test and halt the test on failure.
+- EOSIO_TEST_BEGIN(X) : This macro defines the beginning of a unit test and assigns *X* as the symbolic name of that test.
 - EOSIO_TEST_END : This macro defines the end of a unit test.
-- EOSIO_TEST(X) : This is used to run a particular named unit test `X` in the main function.
+- EOSIO_TEST(X) : This is used to run a particular named unit test *X* in the main function.

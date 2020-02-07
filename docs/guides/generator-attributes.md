@@ -1,6 +1,12 @@
-## ABI/Code generator attributes
-Unlike the old ABI generator tool, the new tool uses C++11 or GNU style attributes to mark ```actions``` and ```tables```.
+ \defgroup generator-attributes Generator Attributes
+ \ingroup md_guides
+
+# ABI/Code generator attributes
+
+Unlike the old ABI generator tool, the new tool uses C++11 or GNU style attributes to mark *actions* and *tables*.
+
 #### [[eosio::action]]
+
 This attribute marks either a struct or a method as an action.
 Example (four ways to declare an action for ABI generation):
 ```c++
@@ -26,7 +32,7 @@ struct __attribute__((eosio_action)) testa {
    EOSLIB_SERIALIZE( testa, (n) )
 };
 ```
-If your action name is not a valid [EOSIO name](https://developers.eos.io/eosio-cpp/docs/naming-conventions) you can explicitly specify the name in the attribute ```c++ [[eosio::action("<valid action name>")]]```
+If your action name is not a valid [EOSIO name](https://developers.eos.io/eosio-cpp/docs/naming-conventions) you can explicitly specify the name in the attribute *c++ [[eosio::action("<valid action name>")]]*
 
 #### [[eosio::table]]
 Example (two ways to declare a table for ABI generation):
@@ -43,14 +49,14 @@ struct __attribute__((eosio_table)) testtable {
 
 typedef eosio::multi_index<"tablename"_n, testtable> testtable_t;
 ```
-If you don't want to use the multi-index you can explicitly specify the name in the attribute ```c++ [[eosio::table("<valid action name>")]]```.
+If you don't want to use the multi-index you can explicitly specify the name in the attribute *c++ [[eosio::table("<valid action name>")]]*.
 
 #### [[eosio::contract("\<any name you like\>")]]
 ```
 class [[eosio::contract("<any name you would like>")]] test_contract : public eosio::contract {
 };
 ```
-This will mark this `class` as being an `EOSIO` contract, this allows for namespacing of contracts, i.e. you can include headers like `eosio::token` and not have `eosio::token`'s actions/tables wind up in you ABI or generated dispatcher.
+This will mark this *class* as being an *EOSIO* contract. Also, this allows for namespacing of contracts, i.e. you can include headers like *eosio::token* and not have actions/tables of *eosio::token* which wind up in ABI or generated dispatcher.
 
 #### [[eosio::on_notify("\<valid eosio account name\>::\<valid eosio action name\>")]]
 ```
@@ -73,7 +79,7 @@ void some_function(...) {
 }
 ```
 
-This will mark an arbitrary function as an entry point, which will then wrap the function with global constructors (ctors) and global destructors (dtors).  This will allow for the cyberway.cdt toolchain to produce WASM binaries for other ecosystems.
+This will mark an arbitrary function as an entry point, which will then wrap the function with global constructors (ctors) and global destructors (dtors). This will allow for the cyberway.cdt toolchain to produce WASM binaries for other ecosystems.
 
 #### [[eosio::wasm_import]]
 ```
@@ -83,8 +89,8 @@ extern "C" {
 }
 ```
 
-This will mark a function declaration as being a WebAssembly import.  This allows for other compilation modes to specify which functions are import only (i.e. do not link) without having to maintain a secondary file with duplicate declarations.
+This will mark a function declaration as being a WebAssembly import. This allows for other compilation modes to specify which functions are import only (i.e. do not link) without having to maintain a secondary file with duplicate declarations.
 
 ### Fixing an ABI or Writing an ABI Manually
 - Advanced features of the newest version of the ABI will require manual construction of the ABI, and odd and advanced C++ patterns could capsize the generators type deductions. So having a good knowledge of how to write an ABI should be an essential piece of knowledge of a smart contract writer.
-- Please refer to [developers.eos.io "How to Write an ABI File"](https://developers.eos.io/eosio-cpp/docs/how-to-write-an-abi) to learn about the different sections of an ABI.
+

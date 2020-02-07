@@ -1,7 +1,9 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberway/LICENSE
  */
+ 
 #pragma once
 #include <cstdlib>
 
@@ -64,7 +66,7 @@ namespace eosio {
    /**
     *  @defgroup action Action
     *  @ingroup contracts
-    *  @brief Defines type-safe C++ wrappers for querying action and sending action
+    *  @brief Defines type-safe C++ wrappers for querying action and sending action.
     *  @note There are some methods from the @ref action that can be used directly from C++
     */
 
@@ -95,10 +97,8 @@ namespace eosio {
    }
 
    /**
-    *  Add the specified account to set of accounts to be notified
-    *
     *  @ingroup action
-    *  @brief Add the specified account to set of accounts to be notified
+    *  @brief Add the specified account to set of accounts to be notified.
     *  @param notify_account - name of the account to be verified
     */
    inline void require_recipient( name notify_account ){
@@ -132,18 +132,18 @@ namespace eosio {
     *  Verifies that @ref name exists in the set of provided auths on a action. Fails if not found.
     *
     *  @ingroup action
-    *  @param name - name of the account to be verified
+    *  @param n - name of the account to be verified
     */
    inline void require_auth( name n ) {
       internal_use_do_not_use::require_auth( n.value );
    }
 
    /**
-    *  Verifies that @ref name exists in the set of provided auths on a action.
+    *  This method is used to check if an account has any authorization. It verifies that name exists in the set of provided auths on an action. It works like @ref require_auth, but on @a fail returns bad result instead of breaking.
     *
     *  @ingroup action
-    *  @param name - name of the account to be verified
-    *  @return true if @ref name exists in the set of provided auths
+    *  @param n - name of the account to be verified
+    *  @return @a true if name exists in the set of provided auths
     */
    inline bool weak_require_auth( name n ) {
       return internal_use_do_not_use::weak_require_auth( n.value );
@@ -244,18 +244,18 @@ namespace eosio {
    }
 
    /**
-    *  Require the specified authorization for this action.
+    *  This method requires the specified authorization to execute an action.
     *
     *  @ingroup action
     *  @param level - Authorization to be required
-    *  @return true if action has the specified auth
+    *  @return @a true if action has the specified auth
     */
    inline bool weak_require_auth( const permission_level& level ) {
       return internal_use_do_not_use::weak_require_auth2( level.actor.value, level.permission.value );
    }
 
    /**
-    *  Verifies that @ref n has auth.
+    *  Verifies that @a n has auth.
     *
     *  @ingroup action
     *  @param n - name of the account to be verified
@@ -265,7 +265,7 @@ namespace eosio {
    }
 
    /**
-    *  Verifies that @ref n is an existing account.
+    *  Verifies that @a n is an existing account.
     *
     *  @ingroup action
     *  @param n - name of the account to check
@@ -593,7 +593,7 @@ INLINE_ACTION_SENDER3( CONTRACT_CLASS, NAME, ::eosio::name(#NAME) )
  *
  * @brief A macro to simplify calling inline actions
  * @details The send inline action macro is intended to simplify the process of calling inline actions. When calling new actions from existing actions 
- * EOSIO supports two communication models, inline and deferred. Inline actions are executed as part of the current transaction. This macro
+ * , inline and deferred. Inline actions are executed as part of the current transaction. This macro
  * creates an @ref action using the supplied parameters and automatically calls action.send() on this newly created action.
  *
  * Example:
@@ -609,9 +609,14 @@ INLINE_ACTION_SENDER3( CONTRACT_CLASS, NAME, ::eosio::name(#NAME) )
  *       uses parameters st.issuer, to, quantity and memo. 
  * This macro creates an action struct used to 'send()' (call) transfer(account_name from, account_name to, asset quantity, string memo)
  * 
- * @param CONTRACT - The contract to call, which contains the action being sent, maps to the @ref account
- * @param NAME - The name of the action to be called, maps to a @ref name
- * @param ... - The authorising permission, maps to an @ref authorization , followed by the parameters of the action, maps to a @ref data.
+ * @param CONTRACT - The contract to call, which contains the action being sent, maps to the [account][1]
+ * @param NAME - The name of the action to be called, maps to a [name][2]
+ * @param ... - The authorising permission, maps to an [authorization][3] , followed by the parameters of the action, maps to a [data][4].
+ *
+ * [1]: @ref eosio::action::account
+ * [2]: @ref eosio::action::name
+ * [3]: @ref eosio::action::authorization
+ * [4]: @ref eosio::action::data
  */
 
 #define SEND_INLINE_ACTION( CONTRACT, NAME, ... )\

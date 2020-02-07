@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberay/LICENSE
  */
 #pragma once
 #include "../../core/eosio/time.hpp"

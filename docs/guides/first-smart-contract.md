@@ -1,31 +1,38 @@
-### Building your first smart contract
-```c++
+ \defgroup first-smart-contract First Smart Contract
+ \ingroup md_guides
+
+# Building your first smart contract
+
+```cpp
 #include <eosio/eosio.hpp>
 #include <eosio/name.hpp>
 
 class [[eosio::contract]] hello : public eosio::contract {
-   public:
-      using eosio::contract::contract;
+    public:
+        using eosio::contract::contract;
 
-      [[eosio::action]]
-      void hi(eosio::name nm) {
-         eosio::print_f("Hello, %\n", nm);
-      }
+        [[eosio::action]]
+        void hi(eosio::name nm) {
+            eosio::print_f("Hello, %\n", nm);
+        }
 };
 ```
 
 - Navigate to the hello folder in examples (./examples/hello).
-- You should then see the hello.cpp file
-- Now run the compiler
+- The hello.cpp file should be seen.
+- Now run the compiler.
+
 ```sh
-$ eosio-cpp -abigen hello.cpp -o hello.wasm
+    $ cyberway.eosio-cpp -abigen hello.cpp -o hello.wasm
 ```
+
 - Or with CMake
+
 ```sh
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
 ```
 This will generate two files:
 * The compiled binary wasm (hello.wasm)
