@@ -27,7 +27,7 @@ using namespace clang::tooling;
 using namespace llvm;
 
 #define CPP_COMP 1
-#define COMPILER_NAME "eosio-cpp"
+#define COMPILER_NAME "cyberway-cpp"
 #include <compiler_options.hpp>
 
 #include <set>
@@ -43,6 +43,7 @@ namespace eosio { namespace cdt {
    DeclarationMatcher function_decl_matcher = cxxMethodDecl().bind("eosio_tool");
    DeclarationMatcher record_decl_matcher   = cxxRecordDecl().bind("eosio_tool");
    DeclarationMatcher typedef_decl_matcher  = typedefDecl().bind("eosio_tool");
+   DeclarationMatcher typedef_name_decl_matcher  = typedefNameDecl().bind("eosio_tool");
    auto               class_tmp_matcher     = classTemplateSpecializationDecl().bind("eosio_tool");
    abigen_exception  abigen_ex;
    codegen_exception codegen_ex;
@@ -83,6 +84,12 @@ namespace eosio { namespace cdt {
                      get_abigen_ref().add_type( field->getType() );
                   }
                }
+               if (decl->isEosioEvent() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
+                  get_abigen_ref().add_struct(decl);
+                  get_abigen_ref().add_event(decl);
+                  for (auto field : decl->fields())
+                     get_abigen_ref().add_type( field->getType() );
+               }
                if (decl->isEosioTable() && abigen::is_eosio_contract(decl, get_abigen_ref().get_contract_name())) {
                   get_abigen_ref().add_struct(decl);
                   get_abigen_ref().add_table(decl);
@@ -99,11 +106,30 @@ namespace eosio { namespace cdt {
             }
          }
    };
+
+   class EosioTypedefNameMatcher : public MatchFinder::MatchCallback {
+      public:
+         virtual void run( const MatchFinder::MatchResult& res ) {
+            if (const auto* decl = res.Nodes.getNodeAs<clang::TypedefNameDecl>("eosio_tool"))
+            if (const auto* type = decl->getTypeForDecl()) {
+               if (const auto* templ = type->getAs<TemplateSpecializationType>()) {
+                  const auto& type_name = templ->getTemplateName().getAsTemplateDecl()->getNameAsString();
+                  if (type_name == "indexed_by" && decl->hasEosioOrders()) {
+                     get_abigen_ref().add_index(decl, templ);
+                  } else if (type_name == "multi_index" && decl->hasEosioOrders()) {
+                     get_abigen_ref().add_table(decl, templ);
+                  } else if (type_name == "singleton") {
+                     get_abigen_ref().add_table(decl, templ, true);
+                  }
+               }
+            }
+         }
+   };
 }} // ns eosio::cdt
 
 void generate(const std::vector<std::string>& base_options, std::string input, std::string contract_name, const std::vector<std::string>& resource_paths, bool abigen) {
    std::vector<std::string> options;
-   options.push_back("eosio-cpp");
+   options.push_back("cyberway-cpp");
    options.push_back(input); // don't remove oddity of CommonOptionsParser?
    options.push_back(input);
    options.push_back("--");
@@ -128,10 +154,12 @@ void generate(const std::vector<std::string>& base_options, std::string input, s
 
    EosioMethodMatcher eosio_method_matcher;
    EosioRecordMatcher eosio_record_matcher;
+   EosioTypedefNameMatcher eosio_typedef_name_matcher;
    MatchFinder finder;
 
    finder.addMatcher(function_decl_matcher, &eosio_method_matcher);
    finder.addMatcher(record_decl_matcher, &eosio_record_matcher);
+   finder.addMatcher(typedef_name_decl_matcher, &eosio_typedef_name_matcher);
    finder.addMatcher(class_tmp_matcher, &eosio_record_matcher);
 
    int tool_run = -1;
@@ -140,7 +168,7 @@ void generate(const std::vector<std::string>& base_options, std::string input, s
       throw std::runtime_error("abigen error");
    }
    std::string abi_s;
-   if (get_abigen_ref().is_empty())
+   if (!abigen)
       return;
    get_abigen_ref().to_json().dump(abi_s);
    codegen::get().set_abi(abi_s);

@@ -9,7 +9,7 @@ binaries=(eosio-ranlib
           eosio-wast2wasm
           eosio-pp
           eosio-cc
-          eosio-cpp
+          cyberway-cpp
           eosio-ld)
 
 if [ -d "/usr/local/cyberway.cdt" ]; then

@@ -48,7 +48,7 @@ create_symlink() {
 }
 
 create_symlink "eosio-cc eosio-cc"
-create_symlink "eosio-cpp eosio-cpp"
+create_symlink "cyberway-cpp cyberway-cpp"
 create_symlink "eosio-ld eosio-ld"
 create_symlink "eosio-pp eosio-pp"
 create_symlink "eosio-init eosio-init"
