@@ -24,30 +24,12 @@ struct generation_utils {
    generation_utils( std::function<void()> err ) : error_handler(err), resource_dirs({"./"}) {}
    generation_utils( std::function<void()> err, const std::vector<std::string>& paths ) : error_handler(err), resource_dirs(paths) {}
 
-   static inline bool is_ignorable( const clang::QualType& type ) {
-      auto check = [&](const clang::Type* pt) {
-        if (auto tst = llvm::dyn_cast<clang::TemplateSpecializationType>(pt))
-         if (auto rt = llvm::dyn_cast<clang::RecordType>(tst->desugar()))
-            return rt->getDecl()->isEosioIgnore();
-
-         return false;
-      };
-
-      bool is_ignore = false;
-      if ( auto pt = llvm::dyn_cast<clang::ElaboratedType>(type.getTypePtr()) )
-         is_ignore = check(pt->desugar().getTypePtr());
-      else
-         is_ignore = check(type.getTypePtr());
-      return is_ignore;
-   }
-
-   static inline clang::QualType get_ignored_type( const clang::QualType& type ) {
-      if ( !is_ignorable(type) )
-         return type;
+   static inline clang::QualType get_ignored_type( const clang::QualType& type) {
       auto get = [&](const clang::Type* pt) {
          if (auto tst = llvm::dyn_cast<clang::TemplateSpecializationType>(pt))
             if (auto decl = llvm::dyn_cast<clang::RecordType>(tst->desugar()))
-               return decl->getDecl()->isEosioIgnore() ? tst->getArg(0).getAsType() : type;
+               if (decl->getDecl()->isEosioIgnore()) 
+                  return tst->getArg(0).getAsType();
          return type;
       };
 
@@ -337,7 +319,10 @@ struct generation_utils {
       return _translate_type(replace_in_name(ret));
    }
 
-   inline std::string translate_type( const clang::QualType& type ) {
+   inline std::string translate_type( const clang::QualType& type0, bool ignore_type = true ) {
+      clang::QualType type = type0;
+      if (ignore_type)
+         type = get_ignored_type(type);
       if ( is_template_specialization( type, {"ignore"} ) )
          return translate_type(get_template_argument( type ).getAsType() );
       else if ( is_template_specialization( type, {"binary_extension"} ) ) {
@@ -445,7 +430,7 @@ struct generation_utils {
    }
 
    inline std::string get_type( const clang::QualType& t ) {
-      return translate_type(get_ignored_type(t));
+      return translate_type(get_ignored_type(t), false);
    }
 
    inline std::string get_type_alias_string( const clang::QualType& t ) {
