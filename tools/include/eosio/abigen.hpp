@@ -316,7 +316,7 @@ namespace eosio { namespace cdt {
             return;
          evaluated.insert(t.getTypePtr());
          auto type = get_ignored_type(t);
-         if (!is_builtin_type(translate_type(type))) {
+         if (!is_builtin_type(translate_type(type, false))) {
             if (is_aliasing(type))
                add_typedef(type);
             else if (is_template_specialization(type, {"vector", "set", "deque", "list", "optional", "binary_extension", "ignore"})) {
