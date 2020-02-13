@@ -3,7 +3,7 @@
 
 # cyberway.eosio-cpp tool
 
-To manually compile the source code, use *cyberway.eosio-cpp/cyberway.eosio-cc* and *cyberway.eosio-ld* as if it were __clang__ and __lld__. All the includes and options specific to CyberWay and CDT are baked in.
+To manually compile the source code, use `cyberway.eosio-cpp/cyberway.eosio-cc` and `cyberway.eosio-ld` as if it were __clang__ and __lld__. All the includes and options specific to CyberWay and CDT are baked in.
 
 ### Usage
 

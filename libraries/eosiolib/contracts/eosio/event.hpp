@@ -26,7 +26,9 @@ namespace eosio {
     * @brief Defines type-safe C++ wrappers for sending events
     *
     * @note The @ref eventcppapi contains several methods taken from the eventcapi group that can be used directly from C++.
-    *
+    */
+
+    /**
     * @ingroup eventcppapi
     *
     * @{
