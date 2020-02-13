@@ -90,6 +90,7 @@ intrinsic_macro(send_inline) \
 intrinsic_macro(send_context_free_inline) \
 intrinsic_macro(send_deferred) \
 intrinsic_macro(cancel_deferred) \
+intrinsic_macro(send_nested) \
 intrinsic_macro(get_context_free_data) 
 
 #define CREATE_ENUM(name) \
