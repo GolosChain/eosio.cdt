@@ -589,8 +589,8 @@ private:
             }
             vector.clear();
 
-            for (auto& itr: map) {
-                itr->second->deleted_ = true;
+            for (auto& itm: map) {
+                itm.second->deleted_ = true;
             }
             map.clear();
         }

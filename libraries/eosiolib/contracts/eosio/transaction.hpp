@@ -21,6 +21,9 @@ namespace eosio {
          int cancel_deferred(const uint128_t&);
 
          __attribute__((eosio_wasm_import))
+         void send_nested(const char*, size_t);
+
+         __attribute__((eosio_wasm_import))
          size_t read_transaction(char*, size_t);
 
          __attribute__((eosio_wasm_import))
@@ -228,6 +231,17 @@ namespace eosio {
      */
    inline int cancel_deferred(const uint128_t& sender_id) {
       return internal_use_do_not_use::cancel_deferred(sender_id);
+   }
+
+   /**
+    *  Send a nested transaction
+    *
+    *  @ingroup transaction
+    *  @param serialized_transaction - The packed transaction to be nested
+    *  @param size - The size of the packed transaction, required for persistence.
+    */
+   inline void send_nested(const char* serialized_transaction, size_t size) {
+      internal_use_do_not_use::send_nested(serialized_transaction, size);
    }
 
    /**
