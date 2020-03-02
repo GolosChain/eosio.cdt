@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 
 REVISION=$(git rev-parse HEAD)
 
@@ -9,7 +9,7 @@ else
     BUILDTYPE="latest"
 fi
 
-if [[ -z ${BUILDER_TAG} ]]; then 
+if [[ -z ${BUILDER_TAG+x} ]]; then 
     BUILDER_TAG=${BUILDTYPE}
     docker pull cyberway/builder:${BUILDER_TAG}
 fi
