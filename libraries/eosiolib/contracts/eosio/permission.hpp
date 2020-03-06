@@ -88,14 +88,6 @@ namespace eosio {
    }
 
 
-  /*
-  *
-   * @ defgroup permission Permission
-   * @ ingroup contracts
-   * @ ingroup types
-   * @ brief Defines C++ API functions for validating authorization of keys and permissions
-   */
-
    /**
     *  Checks if a transaction is authorized by a provided set of keys and permissions
     *  @ingroup permission

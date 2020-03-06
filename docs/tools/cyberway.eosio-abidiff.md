@@ -4,7 +4,7 @@
  \ingroup md_tools
 
 
-# eosio-abidiff tool
+# cyberway.eosio-abidiff tool
 
 The cyberway.eosio-abidiff tool is used to diff two ABI files to flag and output differences. To report differences with `cyberway.eosio-abidiff`, you only need to pass the two ABI file names as command line arguments.
 

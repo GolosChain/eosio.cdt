@@ -4,7 +4,70 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="no" title="" intro=""/>
-    <tab type="modules" visible="yes" title="Developers" intro=""/>
+    <tab type="usergroup" visible="yes" title="Tools" intro="Documents" >
+      <tab type="user" url="@ref cyberway-eosio-abidiff" visible="yes" title="CyberWay-Eosio Abidiff" />
+      <tab type="user" url="@ref cyberway-eosio-abigen" visible="yes" title="CyberWay-Eosio Abigen" />
+      <tab type="user" url="@ref cyberway-eosio-cpp" visible="yes" title="CyberWay-Eosio Cpp" />
+      <tab type="user" url="@ref cyberway-eosio-init" visible="yes" title="CyberWay-Eosio Init" />
+      <tab type="user" url="@ref cyberway-eosio-ld" visible="yes" title="CyberWay-Eosio Ld" />
+    </tab>
+
+    <tab type="usergroup" visible="yes" title="Upgrading">
+      <tab type="user" url="@ref v12-to-v13" visible="yes" title="1.2 To 1.3" />
+      <tab type="user" url="@ref v15-to-v16" visible="yes" title="1.5 To 1.6" />
+    </tab>
+
+    <tab type="usergroup" visible="yes" title="Guides">
+      <tab type="user" url="@ref cmake" visible="yes" title="Cmake" />
+      <tab type="user" url="@ref first-smart-contract" visible="yes" title="First Smart Contract" />
+      <tab type="user" url="@ref generator-attributes" visible="yes" title="Generator Attributes" />
+      <tab type="user" url="@ref native-tester" visible="yes" title="Native Tester" />
+      <tab type="user" url="@ref no-ricardians" visible="yes" title="No Ricardian Contracts" />
+    </tab>
+
+    <tab type="usergroup" visible="yes" title="Modules">
+      <tab type="usergroup" url="@ref contracts" visible="yes" title="Contracts API" >
+        <tab type="user" url="@ref action" visible="yes" title="Action" />
+        <tab type="user" url="@ref contract" visible="yes" title="Contract" />
+        <tab type="user" url="@ref dispatcher" visible="yes" title="Dispatcher" />
+        <tab type="user" url="@ref domaincppapi" visible="yes" title="Domain C++ API" />
+        <tab type="user" url="@ref eventcppapi" visible="yes" title="Event C++ API" />
+        <tab type="user" url="@ref multiindex" visible="yes" title="Multi Index Table" />
+        <tab type="user" url="@ref permission" visible="yes" title="Permission" />
+        <tab type="user" url="@ref privileged" visible="yes" title="Privileged" />
+        <tab type="user" url="@ref producer_key" visible="yes" title="Producer Key" />
+        <tab type="user" url="@ref producer_schedule" visible="yes" title="Producer Schedule" />
+        <tab type="user" url="@ref singleton" visible="yes" title="Singleton Table" />
+        <tab type="user" url="@ref transaction" visible="yes" title="Transaction" />
+        <tab type="user" url="@ref system" visible="yes" title="System" />
+      </tab>
+      <tab type="usergroup" url="@ref core" visible="yes" title="Core API" >
+        <tab type="user" url="@ref asset" visible="yes" title="Asset" />
+        <tab type="user" url="@ref binary_extension" visible="yes" title="Binary Extension" />
+        <tab type="user" url="@ref system" visible="yes" title="System" />
+        <tab type="user" url="@ref datastream" visible="yes" title="Data Stream" />
+        <tab type="user" url="@ref fixed_bytes" visible="yes" title="Fixed Size Byte Array" />
+        <tab type="user" url="@ref ignore" visible="yes" title="Ignore" />
+        <tab type="user" url="@ref name" visible="yes" title="Name" />
+        <tab type="user" url="@ref console" visible="yes" title="Console" />
+        <tab type="user" url="@ref serialize" visible="yes" title="Serialize" />
+        <tab type="user" url="@ref symbol" visible="yes" title="Symbol" />
+        <tab type="user" url="@ref time" visible="yes" title="Time" />
+        <tab type="user" url="@ref varint" visible="yes" title="Variable Length Integer Type" />
+      </tab>
+      <tab type="usergroup" url="@ref types" visible="yes" title="Types" >
+        <tab type="user" url="@ref contract" visible="yes" title="Contract" />
+        <tab type="user" url="@ref permission" visible="yes" title="Permission" />
+        <tab type="user" url="@ref producer_key" visible="yes" title="Producer Key" />
+        <tab type="user" url="@ref producer_schedule" visible="yes" title="Producer Schedule" />
+        <tab type="user" url="@ref binary_extension" visible="yes" title="Binary Extension" />
+        <tab type="user" url="@ref fixed_bytes" visible="yes" title="Fixed Size Byte Array" />
+        <tab type="user" url="@ref name" visible="yes" title="Name" />
+        <tab type="user" url="@ref varint" visible="yes" title="Variable Length Integer Type" />
+      </tab>
+    </tab>
+
+    <tab type="modules" visible="no" title="" intro=""/>
     <tab type="namespaces" visible="no" title="">
       <tab type="namespacelist" visible="no" title="" intro=""/>
       <tab type="namespacemembers" visible="no" title="" intro=""/>
