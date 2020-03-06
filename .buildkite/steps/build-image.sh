@@ -9,6 +9,9 @@ else
     BUILDTYPE="latest"
 fi
 
-BUILDER_TAG=${BUILDER_TAG:-$BUILDTYPE}
+if [[ -z ${BUILDER_TAG+x} ]]; then 
+    BUILDER_TAG=${BUILDTYPE}
+    docker pull cyberway/builder:${BUILDER_TAG}
+fi
 
 docker build -t cyberway/cyberway.cdt:${REVISION} --build-arg version=${REVISION} --build-arg buildtype=${BUILDER_TAG} -f docker/Dockerfile .
