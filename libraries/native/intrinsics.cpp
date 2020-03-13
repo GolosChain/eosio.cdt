@@ -138,6 +138,9 @@ extern "C" {
    int cancel_deferred(const uint128_t& sender_id) {
       return intrinsics::get().call<intrinsics::cancel_deferred>(sender_id);
    }
+   void send_nested(const char *serialized_transaction, size_t size) {
+      return intrinsics::get().call<intrinsics::send_nested>(serialized_transaction, size);
+   }
    int get_context_free_data( uint32_t index, char* buff, size_t size ) {
       return intrinsics::get().call<intrinsics::get_context_free_data>(index, buff, size);
    }

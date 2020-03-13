@@ -150,6 +150,8 @@ namespace eosio { namespace cdt {
          Rewriter  rewriter;
          CompilerInstance* ci;
          bool apply_was_found = false;
+         std::vector<std::string> action_log;
+         std::vector<std::string> notify_log;
 
       public:
          std::vector<CXXMethodDecl*> action_decls;
@@ -223,7 +225,7 @@ namespace eosio { namespace cdt {
          */
 
          template <typename F>
-         void create_dispatch(const std::string& attr, const std::string& func_name, F&& get_str, CXXMethodDecl* decl) {
+         void create_dispatch(const std::string& attr, const std::string& func_name, F&& get_str, CXXMethodDecl* decl, std::vector<std::string>& log) {
             constexpr static uint32_t max_stack_size = 512;
             std::stringstream ss;
             codegen& cg = codegen::get();
@@ -256,12 +258,12 @@ namespace eosio { namespace cdt {
                   clang::LangOptions lang_opts;
                   lang_opts.CPlusPlus = true;
                   clang::PrintingPolicy policy(lang_opts);
+                  policy.Bool = 1;
                   auto qt = param->getOriginalType().getNonReferenceType();
                   qt.removeLocalConst();
                   qt.removeLocalVolatile();
                   qt.removeLocalRestrict();
                   std::string tn = clang::TypeName::getFullyQualifiedName(qt, *(cg.ast_context), policy);
-                  tn = tn == "_Bool" ? "bool" : tn; // TODO look out for more of these oddities
                   ss << tn << " arg" << i << "; ds >> arg" << i << ";\n";
                   i++;
                }
@@ -275,17 +277,18 @@ namespace eosio { namespace cdt {
                ss << "}}\n";
 
                rewriter.InsertTextAfter(ci->getSourceManager().getLocForEndOfFile(main_fid), ss.str());
+               log.push_back(get_str(decl));
             }
          }
 
          void create_action_dispatch(CXXMethodDecl* decl) {
             auto func = [](CXXMethodDecl* d) { return generation_utils::get_action_name(d); };
-            create_dispatch("eosio_wasm_action", "__eosio_action_", func, decl);
+            create_dispatch("eosio_wasm_action", "__eosio_action_", func, decl, action_log);
          }
 
          void create_notify_dispatch(CXXMethodDecl* decl) {
             auto func = [](CXXMethodDecl* d) { return generation_utils::get_notify_pair(d); };
-            create_dispatch("eosio_wasm_notify", "__eosio_notify_", func, decl);
+            create_dispatch("eosio_wasm_notify", "__eosio_notify_", func, decl, notify_log);
          }
 
          virtual bool VisitCXXMethodDecl(CXXMethodDecl* decl) {
@@ -370,6 +373,23 @@ namespace eosio { namespace cdt {
             return true;
          }
          */
+
+         void print_log() {
+            if (!action_log.empty()) {
+                llvm::outs() << "Added action dispatchers to " << main_name << ": ";
+                for (auto& s : action_log) {
+                    llvm::outs() << s << " ";
+                }
+                llvm::outs() << "\n";
+             }
+            if (!notify_log.empty()) {
+                llvm::outs() << "Added notify dispatchers to " << main_name << ": ";
+                for (auto& s : notify_log) {
+                    llvm::outs() << s << " ";
+                }
+                llvm::outs() << "\n";
+             }
+         }
       };
 
       class eosio_codegen_consumer : public ASTConsumer {
@@ -398,6 +418,7 @@ namespace eosio { namespace cdt {
                
                for (auto nd : visitor->notify_decls)
                   visitor->create_notify_dispatch(nd);
+               visitor->print_log();
 
                int fd;
                llvm::SmallString<128> fn;

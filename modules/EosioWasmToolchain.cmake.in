@@ -15,7 +15,7 @@ set(EOSIO_CDT_VERSION "@VERSION_FULL@")
 set(EOSIO_WASMSDK_VERSION "@VERSION_FULL@")
 
 set(CMAKE_C_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cc")
-set(CMAKE_CXX_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cpp")
+set(CMAKE_CXX_COMPILER "@CDT_ROOT_DIR@/bin/cyberway-cpp")
 set(CMAKE_ASM_COMPILER "@CDT_ROOT_DIR@/bin/eosio-cc")
 
 set(CMAKE_C_FLAGS " -O3 ")

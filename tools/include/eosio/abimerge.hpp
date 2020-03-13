@@ -30,6 +30,7 @@ class ABIMerger {
          ret["types"]    = merge_types(other);
          ret["structs"]  = merge_structs(other);
          ret["actions"]  = merge_actions(other);
+         ret["events"]   = merge_events(other);
          ret["tables"]   = merge_tables(other);
          ret["variants"] = merge_variants(other);
          return ret;
@@ -74,6 +75,10 @@ class ABIMerger {
                 a["type"] == b["type"];
       }
 
+      static bool event_is_same(ojson a, ojson b) {
+         return a["name"] == b["name"] &&
+                a["type"] == b["type"];
+      }
 
       static bool variant_is_same(ojson a, ojson b) {
          for (auto tya : a["types"].array_range()) {
@@ -88,12 +93,51 @@ class ABIMerger {
          return a["name"] == b["name"];
       }
 
+      static inline bool optional_is_same(ojson a, ojson b, const ojson::string_view_type& name) {
+         return (!a.has_key(name)) ? (!b.has_key(name)) : (b.has_key(name) && a[name] == b[name]);
+      }
+
+      static bool orders_are_same(ojson a_orders, ojson b_orders) {
+         if (a_orders.size() != b_orders.size())
+            return false;
+         for (auto a : a_orders.array_range()) {
+            bool found = false;
+            for (auto b : b_orders.array_range()) {
+               if (a["field"] == b["field"] &&
+                   a["order"] == b["order"]) {
+                  found = true;
+                  break;
+               }
+            }
+            if (!found) return false;
+         }
+         return true;
+      }
+
+      static bool indexes_are_same(ojson a_indexes, ojson b_indexes) {
+         if (a_indexes.size() != b_indexes.size())
+            return false;
+         for (auto a : a_indexes.array_range()) {
+            bool found = false;
+            for (auto b : b_indexes.array_range()) {
+               if (a["name"] == b["name"] &&
+                   a["unique"] == b["unique"] &&
+                   orders_are_same(a["orders"], b["orders"])) {
+                  found = true;
+                  break;
+               }
+            }
+            if (!found) return false;
+         }
+         return true;
+      }
+
       static bool table_is_same(ojson a, ojson b) {
+         if (!indexes_are_same(a["indexes"], b["indexes"]))
+            return false;
          return a["name"] == b["name"] &&
                 a["type"] == b["type"] &&
-                a["index_type"] == b["index_type"] &&
-                a["key_names"] == b["key_names"] &&
-                a["key_types"] == b["key_types"];
+                optional_is_same(a, b, "scope_type");
       }
       
       template <typename F>
@@ -138,6 +182,12 @@ class ABIMerger {
       ojson merge_actions(ojson b) {
          ojson acts = ojson::array();
          add_object(acts, abi, b, "actions", "name", action_is_same);
+         return acts;
+      }
+
+      ojson merge_events(ojson b) {
+         ojson acts = ojson::array();
+         add_object(acts, abi, b, "events", "name", event_is_same);
          return acts;
       }
 

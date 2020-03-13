@@ -37,7 +37,7 @@ using jsoncons::ojson;
 
 struct abidiff_exception : public std::exception {
    virtual const char* what() const throw() {
-      return "eosio.abidiff fatal error";
+      return "cyberway.abidiff fatal error";
    }
 } abidiff_ex;
 
@@ -74,13 +74,15 @@ class abidiff {
          return (std::stod(ver.substr(ver.size()-3))*10);
       }
 
-      void diff_version() {
+      unsigned diff_version() {
          if (get_version(abi_1) != get_version(abi_2)) {
             std::cout << "< version\n\t";
             std::cout << abi_1["version"] << "\n";
             std::cout << "> version\n\t";
             std::cout << abi_2["version"] << "\n";
+            return 1;
          }
+         return 0;
       }
       
       void print_struct(const ojson& abi, int index, char direction) {
@@ -95,29 +97,34 @@ class abidiff {
          } 
          return type;
       }
-      void find_structs(const ojson& abi1, const ojson& abi2, char direction) {
+
+      unsigned find_structs(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
          for ( int i=0; i < abi1["structs"].size(); i++ ) {
             bool found = false;
             for ( int j=0; j < abi2["structs"].size(); j++ ) {
                if (abi1["structs"].at(i)["name"] == abi2["structs"].at(j)["name"]) {
-                  if (abi1["structs"].at(i)["fields"].size() != abi2["structs"].at(j)["fields"].size())
-                     break;
                   if (abi1["structs"].at(i)["base"] != abi2["structs"].at(j)["base"])
                      break;
                   
-                  bool _found = false;
+                  if (abi1["structs"].at(i)["fields"].size() != abi2["structs"].at(j)["fields"].size())
+                     break;
+                  found = true;
                   for (int k=0; k < abi1["structs"].at(i)["fields"].size(); k++) {
                      if (abi1["structs"].at(i)["fields"].at(k)["name"] != abi2["structs"].at(j)["fields"].at(k)["name"] ||
-                         abi1["structs"].at(i)["fields"].at(k)["type"] != abi2["structs"].at(j)["fields"].at(k)["type"])
+                         abi1["structs"].at(i)["fields"].at(k)["type"] != abi2["structs"].at(j)["fields"].at(k)["type"]) {
+                        found = false;
                         break;
-                     _found = true;
+                     }
                   }
-                  found = _found;
                }
             }
-            if (!found)
+            if (!found) {
+               ++differences;
                print_struct(abi1, i, direction);
+            }
          }
+         return differences;
       }
 
       void print_type(const ojson& abi, int index, char direction) {
@@ -125,7 +132,8 @@ class abidiff {
          std::cout << pretty_print(abi["types"].at(index)) << "\n";
       }
 
-      void find_types(const ojson& abi1, const ojson& abi2, char direction) {
+      unsigned find_types(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
          for ( int i=0; i < abi1["types"].size(); i++ ) {
             bool found = false;
             for ( int j=0; j < abi2["types"].size(); j++ ) {
@@ -135,9 +143,12 @@ class abidiff {
                   found = true;
                }
             }
-            if (!found)
+            if (!found) {
+               ++differences;
                print_type(abi1, i, direction);
+            }
          }
+         return differences;
       }
 
       void print_action(const ojson& abi, int index, char direction) {
@@ -145,7 +156,8 @@ class abidiff {
          std::cout << pretty_print(abi["actions"].at(index)) << "\n";
       }
 
-      void find_actions(const ojson& abi1, const ojson& abi2, char direction) {
+      unsigned find_actions(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
          for ( int i=0; i < abi1["actions"].size(); i++ ) {
             bool found = false;
             for ( int j=0; j < abi2["actions"].size(); j++ ) {
@@ -155,9 +167,76 @@ class abidiff {
                   found = true;
                }
             }
-            if (!found)
+            if (!found) {
+               ++differences;
                print_action(abi1, i, direction);
+            }
          }
+         return differences;
+      }
+
+      void print_event(const ojson& abi, int index, char direction) {
+         std::cout << direction << " event\n";
+         std::cout << pretty_print(abi["events"].at(index)) << "\n";
+      }
+
+      unsigned find_events(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
+         for ( int i=0; i < abi1["events"].size(); i++ ) {
+            bool found = false;
+            for ( int j=0; j < abi2["events"].size(); j++ ) {
+               if (abi1["events"].at(i)["name"] == abi2["events"].at(j)["name"]) {
+                  if (abi1["events"].at(i)["type"] != abi2["events"].at(j)["type"])
+                     break;
+                  found = true;
+               }
+            }
+            if (!found) {
+               ++differences;
+               print_event(abi1, i, direction);
+            }
+         }
+         return differences;
+      }
+
+      void print_order(const ojson& abi, int index, char direction) {
+         std::cout << direction << " order\n";
+         std::cout << pretty_print(abi["orders"].at(index)) << "\n";
+      }
+
+      void print_index(const ojson& abi, int index, char direction) {
+         std::cout << direction << " index\n";
+         std::cout << pretty_print(abi["indexes"].at(index)) << "\n";
+      }
+
+      unsigned find_indexes(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
+         for ( int i=0; i < abi1["indexes"].size(); i++ ) {
+            bool found = false;
+            for ( int j=0; j < abi2["indexes"].size(); j++ ) {
+               if (abi1["indexes"].at(i)["name"] == abi2["indexes"].at(j)["name"]) {
+                  if (abi1["indexes"].at(i)["unique"].as_string() != abi2["indexes"].at(j)["unique"].as_string()) {
+                     break;
+                  }
+
+                  if (abi1["indexes"].at(i)["orders"].size() != abi2["indexes"].at(j)["orders"].size())
+                     break;
+                  found = true;
+                  for (int k=0; k < abi1["indexes"].at(i)["orders"].size(); k++) {
+                     if (abi1["indexes"].at(i)["orders"].at(k)["field"] != abi2["indexes"].at(j)["orders"].at(k)["field"] ||
+                         abi1["indexes"].at(i)["orders"].at(k)["order"] != abi2["indexes"].at(j)["orders"].at(k)["order"]) {
+                        found = false;
+                        break;
+                     }
+                  }
+               }
+            }
+            if (!found) {
+               ++differences;
+               print_index(abi1, i, direction);
+            }
+         }
+         return differences;
       }
 
       void print_table(const ojson& abi, int index, char direction) {
@@ -165,19 +244,25 @@ class abidiff {
          std::cout << pretty_print(abi["tables"].at(index)) << "\n";
       }
 
-      void find_tables(const ojson& abi1, const ojson& abi2, char direction) {
+      unsigned find_tables(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
          for ( int i=0; i < abi1["tables"].size(); i++ ) {
             bool found = false;
             for ( int j=0; j < abi2["tables"].size(); j++ ) {
                if (abi1["tables"].at(i)["name"] == abi2["tables"].at(j)["name"]) {
                   if (abi1["tables"].at(i)["type"] != abi2["tables"].at(j)["type"])
                      break;
+                  differences += find_indexes(abi1["tables"].at(i), abi2["tables"].at(j), '<');
+                  differences += find_indexes(abi2["tables"].at(j), abi1["tables"].at(i), '>');
                   found = true;
                }
             }
-            if (!found)
+            if (!found) {
+               ++differences;
                print_table(abi1, i, direction);
+            }
          }
+         return differences;
       }
 
       void print_variant(const ojson& abi, int index, char direction) {
@@ -185,7 +270,8 @@ class abidiff {
          std::cout << pretty_print(abi["variants"].at(index)) << "\n";
       }
 
-      void find_variants(const ojson& abi1, const ojson& abi2, char direction) {
+      unsigned find_variants(const ojson& abi1, const ojson& abi2, char direction) {
+         unsigned differences = 0;
          for ( int i=0; i < abi1["variants"].size(); i++ ) {
             bool found = false;
             for ( int j=0; j < abi2["variants"].size(); j++ ) {
@@ -197,53 +283,64 @@ class abidiff {
                }
 
             }
-            if (!found)
+            if (!found) {
+               ++differences;
                print_variant(abi1, i, direction);
+            }
          }
+         return differences;
       }
 
-      void diff_structs() {
-         find_structs(abi_1, abi_2, '<');
-         find_structs(abi_2, abi_1, '>');
+      unsigned diff_structs() {
+         return find_structs(abi_1, abi_2, '<') +
+                find_structs(abi_2, abi_1, '>');
       }
 
-      void diff_types() {
-         find_types(abi_1, abi_2, '<');
-         find_types(abi_2, abi_1, '>');
+      unsigned diff_types() {
+         return find_types(abi_1, abi_2, '<') +
+                find_types(abi_2, abi_1, '>');
       }
 
-      void diff_actions() {
-         find_actions(abi_1, abi_2, '<');
-         find_actions(abi_2, abi_1, '>');
+      unsigned diff_actions() {
+         return find_actions(abi_1, abi_2, '<') +
+                find_actions(abi_2, abi_1, '>');
       }
 
-      void diff_tables() {
-         find_tables(abi_1, abi_2, '<');
-         find_tables(abi_2, abi_1, '>');
+      unsigned diff_events() {
+         return find_events(abi_1, abi_2, '<') +
+                find_events(abi_2, abi_1, '>');
       }
 
-      void diff_variants() {
-         find_variants(abi_1, abi_2, '<');
-         find_variants(abi_2, abi_1, '>');
+      unsigned diff_tables() {
+         return find_tables(abi_1, abi_2, '<') +
+                find_tables(abi_2, abi_1, '>');
       }
 
-      void diff() {
-         diff_version();
-         diff_structs();
-         diff_types();
-         diff_actions();
-         diff_tables();
+      unsigned diff_variants() {
+         return find_variants(abi_1, abi_2, '<') +
+                find_variants(abi_2, abi_1, '>');
+      }
+
+      unsigned diff() {
+         unsigned differences = 0;
+         differences += diff_version();
+         differences += diff_structs();
+         differences += diff_types();
+         differences += diff_actions();
+         differences += diff_events();
+         differences += diff_tables();
          if ( get_version(abi_1) >= 11 && get_version(abi_2) >= 11 )
-            diff_variants();
+            differences += diff_variants();
+         return differences;
       }
 };
 
 int main(int argc, const char **argv) {
 
    cl::SetVersionPrinter([](llvm::raw_ostream& os) {
-        os << "eosio-abidiff version " << "${VERSION_FULL}" << "\n";
+        os << "cyberway-abidiff version " << "${VERSION_FULL}" << "\n";
   });
-   cl::OptionCategory cat("eosio-abidiff", "generates an abi from C++ project input");
+   cl::OptionCategory cat("cyberway-abidiff", "generates an abi from C++ project input");
 
    cl::opt<std::string> input_filename1(
       cl::Positional, 
@@ -256,14 +353,15 @@ int main(int argc, const char **argv) {
       cl::Required,
       cl::cat(cat));
 
-   cl::ParseCommandLineOptions(argc, argv, std::string("eosio-abidiff"));
+   unsigned differences;
+   cl::ParseCommandLineOptions(argc, argv, std::string("cyberway-abidiff"));
    try {
       abidiff diff(input_filename1, input_filename2);
-      diff.diff();
+      differences = diff.diff();
    } catch ( std::exception& e ) {
       std::cout << e.what() << "\n";
       return -1;
    }
    
-   return 0;
+   return differences == 0 ? 0 : 1;
 }

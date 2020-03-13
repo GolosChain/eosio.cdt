@@ -24,30 +24,12 @@ struct generation_utils {
    generation_utils( std::function<void()> err ) : error_handler(err), resource_dirs({"./"}) {}
    generation_utils( std::function<void()> err, const std::vector<std::string>& paths ) : error_handler(err), resource_dirs(paths) {}
 
-   static inline bool is_ignorable( const clang::QualType& type ) {
-      auto check = [&](const clang::Type* pt) {
-        if (auto tst = llvm::dyn_cast<clang::TemplateSpecializationType>(pt))
-         if (auto rt = llvm::dyn_cast<clang::RecordType>(tst->desugar()))
-            return rt->getDecl()->isEosioIgnore();
-
-         return false;
-      };
-
-      bool is_ignore = false;
-      if ( auto pt = llvm::dyn_cast<clang::ElaboratedType>(type.getTypePtr()) )
-         is_ignore = check(pt->desugar().getTypePtr());
-      else
-         is_ignore = check(type.getTypePtr());
-      return is_ignore;
-   }
-
-   static inline clang::QualType get_ignored_type( const clang::QualType& type ) {
-      if ( !is_ignorable(type) )
-         return type;
+   static inline clang::QualType get_ignored_type( const clang::QualType& type) {
       auto get = [&](const clang::Type* pt) {
          if (auto tst = llvm::dyn_cast<clang::TemplateSpecializationType>(pt))
             if (auto decl = llvm::dyn_cast<clang::RecordType>(tst->desugar()))
-               return decl->getDecl()->isEosioIgnore() ? tst->getArg(0).getAsType() : type;
+               if (decl->getDecl()->isEosioIgnore()) 
+                  return tst->getArg(0).getAsType();
          return type;
       };
 
@@ -112,12 +94,25 @@ struct generation_utils {
       return {};
    }
 
+   static inline std::string find_contract(const clang::Decl* decl, const std::string& cn) {
+      std::string name = "";
+      for (auto* attr: decl->getAttrs()) {
+         if (auto* ec = llvm::dyn_cast<clang::EosioContractAttr>(attr)) {
+           auto str = ec->getName().str();
+           if (str.empty()) continue;
+           name = str;
+           if (name == cn) break;
+         }
+      }
+      return name;
+   }
+
    static inline bool is_eosio_contract( const clang::CXXMethodDecl* decl, const std::string& cn ) {
       std::string name = "";
       if (decl->isEosioContract())
-         name = decl->getEosioContractAttr()->getName();
+         name = find_contract(decl, cn);
       else if (decl->getParent()->isEosioContract())
-         name = decl->getParent()->getEosioContractAttr()->getName();
+         name = find_contract(decl->getParent(), cn);
       if (name.empty()) {
          name = decl->getParent()->getName().str();
       }
@@ -128,11 +123,24 @@ struct generation_utils {
       std::string name = "";
       auto pd = llvm::dyn_cast<clang::CXXRecordDecl>(decl->getParent());
       if (decl->isEosioContract()) {
-         auto nm = decl->getEosioContractAttr()->getName().str();
+         auto nm = find_contract(decl, cn);
          name = nm.empty() ? decl->getName().str() : nm;
       }
       else if (pd && pd->isEosioContract()) {
-         auto nm = pd->getEosioContractAttr()->getName().str();
+         auto nm = find_contract(pd, cn);
+         name = nm.empty() ? pd->getName().str() : nm;
+      }
+      return cn == name;
+   }
+
+   static inline bool is_eosio_contract( const clang::TypedefNameDecl* decl, const std::string& cn ) {
+      std::string name = "";
+      auto dc = decl->getDeclContext();
+      if (decl->hasEosioContracts()) {
+         name = find_contract(decl, cn);
+      }
+      else if (dc) if (auto pd = llvm::dyn_cast<clang::CXXRecordDecl>(dc)) if (pd->isEosioContract()) {
+         auto nm = find_contract(pd, cn);
          name = nm.empty() ? pd->getName().str() : nm;
       }
       return cn == name;
@@ -311,7 +319,10 @@ struct generation_utils {
       return _translate_type(replace_in_name(ret));
    }
 
-   inline std::string translate_type( const clang::QualType& type ) {
+   inline std::string translate_type( const clang::QualType& type0, bool ignore_type = true ) {
+      clang::QualType type = type0;
+      if (ignore_type)
+         type = get_ignored_type(type);
       if ( is_template_specialization( type, {"ignore"} ) )
          return translate_type(get_template_argument( type ).getAsType() );
       else if ( is_template_specialization( type, {"binary_extension"} ) ) {
@@ -419,7 +430,7 @@ struct generation_utils {
    }
 
    inline std::string get_type( const clang::QualType& t ) {
-      return translate_type(get_ignored_type(t));
+      return translate_type(get_ignored_type(t), false);
    }
 
    inline std::string get_type_alias_string( const clang::QualType& t ) {
