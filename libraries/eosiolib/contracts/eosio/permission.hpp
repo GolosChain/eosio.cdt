@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberway/LICENSE
  */
 #pragma once
 
@@ -11,6 +12,13 @@
 
 #include <set>
 #include <limits>
+
+/**
+ * @defgroup permission Permission
+ * @ingroup contracts
+ * @ingroup types
+ * @brief Defines C++ API functions for validating authorization of keys and permissions
+ */
 
 namespace eosio {
    namespace internal_use_do_not_use {
@@ -80,13 +88,6 @@ namespace eosio {
    }
 
 
-  /**
-   * @defgroup permission Permission
-   * @ingroup contracts
-   * @ingroup types
-   * @brief Defines C++ API functions for validating authorization of keys and permissions
-   */
-
    /**
     *  Checks if a transaction is authorized by a provided set of keys and permissions
     *  @ingroup permission
@@ -137,7 +138,7 @@ namespace eosio {
     *  @param permission - the permission name to check for authorization
     *  @param provided_keys - the set of public keys which have authorized the transaction
     *  @param provided_permissions - the set of permissions which have authorized the transaction (empty permission name acts as wildcard)
-    *  @param provided_delay_us - the provided delay in microseconds (cannot exceed INT64_MAX)
+    *  @param provided_delay - the provided delay in microseconds (cannot exceed INT64_MAX)
     *
     *  @return whether the permission was authorized by provided delay, keys, and permissions
     */

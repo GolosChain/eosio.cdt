@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberway/LICENSE
  */
 #pragma once
 #include "datastream.hpp"
@@ -163,8 +164,9 @@ namespace eosio {
          *
          *  @tparam FirstWord - The type of the first word in the sequence
          *  @tparam Rest - The type of the remaining words in the sequence
-         *  @param first_word - The first word in the sequence
-         *  @param rest - The remaining words in the sequence
+         *  @note
+         *  first_word - The first word in the sequence  
+         *  rest - The remaining words in the sequence
          */
          template<typename FirstWord, typename... Rest>
          static
@@ -246,7 +248,7 @@ namespace eosio {
          /**
           * Prints fixed_bytes as a hexidecimal string
           *
-          * @param val to be printed
+          * No parameters required
           */
          inline void print()const {
             auto arr = extract_as_byte_array();

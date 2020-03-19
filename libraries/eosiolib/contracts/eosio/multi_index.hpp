@@ -489,6 +489,14 @@ template<eosio::name::raw TableName> struct upper_bound<TableName, "primary"_n> 
     }
 }; // struct upper_bound
 
+/**
+ * @defgroup multiindex Multi Index Table
+ * @ingroup contracts
+ * @brief Defines CyberWay Multi Index Table
+ *
+ * @details CyberWay Multi-Index table, like EOSIO, requires exactly a uint64_t primary key. For the table to be able to retrieve the primary key, the object stored inside the table is required to have a const member function called primary_key() that returns uint64_t.
+ * Multi-Index table also supports up to 16 secondary indices.
+ */
 template<eosio::name::raw TableName, typename T, typename... Indices>
 class multi_index {
 private:
@@ -954,51 +962,148 @@ private:
 
         static_assert(validate_index_name(IndexName), "invalid index name used in multi_index");
 
+        /**
+        *  The @ref table_name method is used to get the name of a table.
+        *  "multi_index does not support table names with a length greater than 12"
+        *  @ingroup multiindex
+        *
+        *  @return A table name.
+        *  @note multi_index does not support table names with a length greater than 12.
+        */
         constexpr static table_name_t   table_name()       { return TableName;         }
+
+        /**
+        *  The index_name method is used to obtain the name of index when a certain table field is selected (similar to getting a column name in a table).
+        *  @ingroup multiindex
+        *
+        *  @return An index name.
+        */
         constexpr static index_name_t   index_name()       { return IndexName;         }
+
+        /**
+        *  The get_code method is used to get the account name that owns a primare table.
+        *  @ingroup multiindex
+        *
+        *  @return Account name of the code that owns the primary table.
+        */
         constexpr        account_name_t code()       const { return multidx_->code();  }
+
+        /**
+        *  The get_scope method is used to get `scope` member property.
+        *  @ingroup multiindex
+        *
+        *  @return Identifier of the scope within a code of the current receiver under which the desired primary table instance can be found.
+        */
         constexpr        scope_t        scope()      const { return multidx_->scope(); }
 
+        /**
+        *  The @ref cbegin method is used to set an iterator to the beginning of the Multi-Index table. If the table is empty, the returned iterator will be equal to @ref cend().
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        *
+        *  The following figure shows location of the items in a Table.
+        *  @image html std-cbegin.png
+        */
         constexpr const const_iterator& cbegin() const {
             if (!cbegin_.has_value()) {
                 cbegin_.emplace(const_iterator(multidx_, const_iterator::uninitialized_begin));
             }
             return *cbegin_;
         }
+
+        /**
+        *  The @ref begin method is used to set an iterator to the beginning of the container. If the container is empty, the returned iterator will be equal to @ref end().
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        */
         constexpr const const_iterator& begin() const {
             return cbegin();
         }
 
+        /**
+        *  The @ref cend method is used to set an iterator to the object following the last object of the container.
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the highest primary key value in the Multi-Index table.
+        */
         constexpr const const_iterator& cend() const {
             if (!cend_.has_value()) {
                 cend_.emplace(const_iterator(multidx_, const_iterator::uninitialized_end));
             }
             return *cend_;
         }
+
+        /**
+        *  The @ref cend method is used to set an iterator to the object following the last object of the container.
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the highest primary key value in the Multi-Index table.
+        */
         constexpr const const_iterator& end() const{
             return cend();
         }
 
+        /**
+        *  The @ref crbegin method is used to set reverse iterator to the beginning of the reversed container. The reversed container objects are arranged in reverse order. It corresponds to the last object of the non-reversed container. If the container is empty, the returned iterator is equal to @ref crend().
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        */
         constexpr const const_reverse_iterator& crbegin() const {
             if (!crbegin_.has_value()) {
                 crbegin_.emplace(const_iterator(multidx_, const_iterator::uninitialized_end));
             }
             return *crbegin_;
         }
+
+        /**
+        *  The @ref rbegin method is used to set reverse iterator to the beginning of the reversed container. The reversed container objects are arranged in reverse order. It corresponds to the last object of the non-reversed container. If the container is empty, the returned iterator is equal to rend().
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        */
         constexpr const const_reverse_iterator& rbegin() const {
             return crbegin();
         }
 
+        /**
+        *  Returns an iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        *
+        *  @details Both @ref rend and @ref crend returns a reverse iterator to the object following the last object of the reversed container. It corresponds to the object preceding the first object of the non-reversed container. This object acts as a placeholder, attempting to access it results in undefined behavior. Reverse iterator stores an iterator to the next object than the one it actually reverse to.
+        *
+        *  The following figure shows location of the last items in containers with forward and reverse sequences.
+        *  @image html std-crend.png
+        */
         constexpr const const_reverse_iterator& crend() const {
             if (!crend_.has_value()) {
                 crend_.emplace(const_iterator(multidx_, const_iterator::uninitialized_begin));
             }
             return *crend_;
         }
+
+        /**
+        *  Returns an iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        *  @ingroup multiindex
+        *
+        *  @return An iterator pointing to the first object with the lowest primary key value in the Multi-Index table.
+        */
         constexpr const const_reverse_iterator& rend() const {
             return crend();
         }
 
+        /**
+        *  The @ref find method is used to search for an existing object (in a table) equal to value specified in the parameter.
+        *  @ingroup multiindex
+        *
+        *  @param value - the value to compare the objects to
+        *
+        *  @return An iterator to the found object whose value is equal to that specified in the parameter OR past-the-end iterator of the referenced table if an object is not found.
+        */
         template<typename Value> const_iterator find(const Value& value) const {
             auto key = key_converter<key_type>::convert(value);
             auto itr = lower_bound(key);
@@ -1010,6 +1115,15 @@ private:
             }
             return itr;
         }
+
+        /**
+        *  The @ref find method is used to search for an existing object in a table using its primary key.
+        *  @ingroup multiindex
+        *
+        *  @param key - primary key value of the object
+        *
+        *  @return An iterator to the found object with key equivalent to key specified in the parameter OR past-the-end iterator of the referenced table if an object is not found.
+        */
         const_iterator find(const key_type& key) const {
            auto itr = lower_bound(key);
            if (itr == cend()) {
@@ -1021,6 +1135,15 @@ private:
            return itr;
         }
 
+        /**
+        *  The @ref require_find method is used to search for an existing object in a table using its primary key. This method is similar to @ref find, but unlike the latter, it issues an error message if an object is not found.
+        *  @ingroup multiindex
+        *
+        *  @param key - primary key value of the object
+        *  @param error_msg - error message if an object with primary key value is not found
+        *
+        *  @return An iterator to the found object which has a primary key equal to specified one OR throws an exception with the error message if an object is not found.
+        */
         const_iterator require_find(const key_type& key, const char* error_msg = "unable to find key") const {
             auto itr = lower_bound(key);
             chaindb_assert(itr != cend(), error_msg);
@@ -1028,27 +1151,68 @@ private:
             return itr;
         }
 
+        /**
+        *  The get method is used to retrieve an existing object from a table using its primary key. This method is similar to @ref require_find, but unlike the latter, it returns not an iterator for the found object, but the value of the found object.
+        *  @ingroup multiindex
+        *
+        *  @param key - primary key value of the object
+        *  @param error_msg - error message if an object with primary key value is not found
+        *
+        *  @return A constant reference to the object containing the specified primary key OR throws an exception with the error message if an object is not found.
+        */
         reference get(const key_type& key, const char* error_msg = "unable to find key") const {
             auto itr = find(key);
             chaindb_assert(itr != cend(), error_msg);
             return *itr;
         }
 
+        /**
+        *  The @ref lower_bound method is used to set an iterator to the object whose value is not less than specified by a key.
+        *  @ingroup multiindex
+        *
+        *  @param key - key value to compare the objects to
+        *
+        *  @return An iterator pointing to the first object that has the lowest primary key that is greater than or equal to @a key. If no such object is found, a past-the-end iterator is returned.
+        */
         const_iterator lower_bound(const key_type& key) const {
             eosio::lower_bound<TableName, IndexName> finder;
             auto cursor = finder(code(), scope(), key);
             return const_iterator(multidx_, cursor);
         }
+
+        /**
+        *  The @ref lower_bound method is used to set an iterator to the object whose value is not less than specified by a parameter.
+        *  @ingroup multiindex
+        *
+        *  @param value - the value to compare the objects to
+        *
+        *  @return An iterator pointing to the first object that compares greater or equal to the parameter @a value. If no such object is found, a past-the-end iterator is returned.
+        */
         template<typename Value> const_iterator lower_bound(const Value& value) const {
             return lower_bound(key_converter<key_type>::convert(value));
         }
 
+        /**
+        *  The @ref upper_bound method is used to set an iterator to the object whose value is greater than specified by a key.
+        *  @ingroup multiindex
+        *
+        *  @param key - key value to compare the objects to
+        *  @return An iterator pointing to the first object that is greater than specified by the key value. If no such object is found, a past-the-end iterator is returned.
+        */
         const_iterator upper_bound(const key_type& key) const {
             eosio::upper_bound<TableName, IndexName> finder;
             auto cursor = finder(code(), scope(), key);
             return const_iterator(multidx_, cursor);
         }
 
+        /**
+        *  The @ref iterator_to method is used to find a location of an object in the Multi-Index table by the specified value.
+        *  @ingroup multiindex
+        *
+        *  @param obj - a reference to the desired object
+        *
+        *  @return An iterator to the given object in the Multi-Index table OR throws an exception with error message if an object is not found.
+        */
         const_iterator iterator_to(reference obj) const {
             const auto& itm = static_cast<const item&>(obj);
             chaindb_assert(multidx_->is_same_multidx(itm), "object passed to iterator_to is not in multi_index");
@@ -1065,12 +1229,48 @@ private:
             return const_iterator(multidx_, cursor, pk, item_ptr(const_cast<item*>(&itm), false));
         }
 
+        /**
+        *  The @ref modify method is used to update an object in a table (the object is searched by the given iterator).
+        *  @ingroup multiindex
+        *
+        *  @param itr - an iterator pointing to the object to be updated
+        *  @param payer - account name of the payer for the Storage usage of the updated row
+        *  @param updater - lambda function that updates the target object
+        *
+        *  @pre Iterator points to an existing object.
+        *  @pre Payer is a valid account that is authorized to execute the action and be billed for storage usage.
+        *  @post The modified object is serialized, then replaces the existing object in the table.
+        *  @post The primary key of the updated object is not changed.
+        *  @post The payer is charged for the storage usage of the updated object.
+        *  @post If payer is the same as the existing payer, payer only pays for the usage difference between existing and updated object (and is refunded if this difference is negative).
+        *  @post If payer is different from the existing payer, the existing payer is refunded for the storage usage of the existing object.
+        *
+        *  > @b Exception  
+        *  > Execution will be aborted if the method is called with an invalid precondition.
+        */
         template<typename Lambda>
         void modify(const const_iterator& itr, account_name_t payer, Lambda&& updater) const {
             chaindb_assert(itr != cend(), "cannot pass end iterator to modify");
             multidx_->modify(*itr, payer, std::forward<Lambda&&>(updater));
         }
 
+
+        /**
+        *  The @ref erase method is used to remove an existing object from a table (the object is searched by the given iterator).
+        *  @ingroup multiindex
+        *
+        *  @param itr - an iterator pointing to the object to be removed
+        *  @param payer - account name of the payer for the storage usage
+        *
+        *  @pre The itr parameter points to an existing object.
+        *  @pre A table, from which the object is removed, does not belong to another contract.
+        *  @post The object is removed from the table and all associated storage is reclaimed.
+        *
+        *  @return For the signature with `const_iterator`, returns a pointer to the object following the removed object. If an object to be removed is the last one in the table, then the return value is similar to execution of @ref end().
+        *
+        *  > @b Exception  
+        *  > The object to be removed is not in the table.
+        */
         const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
             chaindb_assert(itr != cend(), "cannot pass end iterator to erase");
             const auto& obj = *itr;
@@ -1079,6 +1279,14 @@ private:
             return itr;
         }
 
+        /**
+        *  The extract_key method is used to obtain the primary key of an object by a given value.
+        *  @ingroup multiindex
+        *
+        *  @param obj - a reference to the desired object
+        *
+        *  @return Primary key of the object corresponding to the specified value of `obj`.
+        */
         static auto extract_key(reference obj) {
             return extractor_type()(obj);
         }
@@ -1213,6 +1421,22 @@ public:
         items_map_.clear();
     }
 
+    /**
+    *  The @ref emplace is used to insert a new object (i.e., row) into the table.
+    *  @ingroup multiindex
+    *
+    *  @param payer - account name of the payer for the storage usage of the new object
+    *  @param constructor - lambda function that does an in-place initialization of the object to be created in the table. A modified link is passed to this function to initialize the object.
+    *
+    *  @pre A multi index table has been instantiated.
+    *  @post A new object is created in the Multi-Index table, with a unique primary key (as specified in the object). The object is serialized and written to the table. If the table does not exist, it is created.
+    *  @post The payer is charged for the storage usage of the new object and, if the table must be created, for the overhead of the table creation.
+    *
+    *  @return A primary key iterator to the newly created object.
+    *
+    *  > @b Exception  
+    *  > An object to be created in a table of another contract.
+    */
     template<typename Lambda>
     const_iterator emplace(const account_name_t payer, Lambda&& constructor) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation.
@@ -1248,6 +1472,27 @@ public:
         modify(*itr, payer, std::forward<Lambda&&>(updater));
     }
 
+    /**
+    *  The @ref modify method is used to update an object in a table (the object is searched by its value).
+    *  @ingroup multiindex
+    *
+    *  @param obj - a reference to the object to be updated
+    *  @param payer - account name of the payer for the Storage usage of the updated row
+    *  @param updater - lambda function that updates the target object
+    *
+    *  @pre The obj parameter refers to an existing object in the table.
+    *  @pre Payer is a valid account that is authorized to execute the action and be billed for storage usage.
+    *  @post The modified object is serialized, then replaces the existing object in the table.
+    *  @post The primary key of the updated object is not changed.
+    *  @post The payer is charged for the storage usage of the updated object.
+    *  @post If payer is the same as the existing payer, payer only pays for the usage difference between existing and updated object (and is refunded if this difference is negative).
+    *  @post If payer is different from the existing payer, the existing payer is refunded for the storage usage of the existing object.
+    *
+    *  > @b Exceptions  
+    *  > The object to be modified belongs to a table of another contract.  
+    *  > The object to be modified is not in the table.  
+    *  > Updater changes primary key when modifying the object.
+    */
     template<typename Lambda>
     void modify(reference obj, const account_name_t payer, Lambda&& updater) const {
         // Quick fix for mutating db using multi_index that shouldn't allow mutation.
@@ -1288,6 +1533,23 @@ public:
         return primary_idx_.require_find(pk, error_msg);
     }
 
+
+    /**
+    *  Remove an existing object from a table using its primary key (the object is searched by the given iterator).
+    *  @ingroup multiindex
+    *
+    *  @param itr - an iterator pointing to the object to be removed
+    *  @param payer - account name of the payer for the storage usage 
+    *
+    *  @pre The itr parameter points to an existing element
+    *  @post The object is removed from the table and all associated storage is reclaimed.
+    *
+    *  @return For the signature with `const_iterator`, returns a pointer to the object following the removed object.
+    *
+    *  > @b Exceptions  
+    *  > The object to be removed is not in the table.  
+    *  > The object to be removed belongs to a table of another contract.
+    */
     const_iterator erase(const_iterator itr, const account_name_t payer = eosio::name()) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to erase");
 
@@ -1297,6 +1559,21 @@ public:
         return itr;
     }
 
+
+    /**
+    *  The @ref erase method is used to remove an existing object from a table (the object is searched by its primary key).
+    *  @ingroup multiindex
+    *
+    *  @param obj - object to be removed
+    *  @param payer - account name of the payer for the storage usage 
+    *
+    *  @pre The obj parameter is an existing object in the table.
+    *  @post The object is removed from the table and all associated storage is reclaimed.
+    *
+    *  > @b Exceptions  
+    *  > The object to be removed is not in the table.  
+    *  > The object to be removed belongs to a table of another contract.
+    */
     void erase(reference obj, const account_name_t payer = eosio::name()) const {
         const auto& itm = static_cast<const item&>(obj);
 
@@ -1311,6 +1588,20 @@ public:
         internal_use_do_not_use::chaindb_delete(code(), scope(), table_name(), payer, pk);
     }
 
+    /**
+    *  The @ref move_to_ram method is used to move objects from the archive back to the Multi Index table (the object is searched by its value). This operation is inverse to @ref move_to_archive.
+    *  @ingroup multiindex
+    *
+    *  @param obj - a reference to the object to be moved
+    *
+    *  @pre The object is placed back in the Multi-Index table.
+    *  @post The object is moved from the table and cashed code contains it.
+    *
+    *  > @b Exceptions  
+    *  > The object to be moved is not in multi_index.  
+    *  > The object to be moved is already in RAM.  
+    *  > The object to be moved belongs to a table of another contract.
+    */
     void move_to_ram(reference obj) const {
         auto& itm = static_cast<item&>(const_cast<T&>(obj));
 
@@ -1325,11 +1616,39 @@ public:
         itm.service_.in_ram = true;
     }
 
+    /**
+    *  The @ref move_to_ram method is used to move objects from the archive back to the Multi Index table (the object is searched by the given iterator). This operation is inverse to @ref move_to_archive.
+    *  @ingroup multiindex
+    *
+    *  @param itr - an iterator pointing to the object to be moved
+    *
+    *  @pre The object  is placed back in the Multi-Index table.
+    *  @post The object is moved from the table and cashed code contains it.
+    *
+    *  > @b Exceptions  
+    *  > The object to be moved is not in multi_index.  
+    *  > The object to be moved is already in RAM.  
+    *  > The object to be moved belongs to a table of another contract.
+    */
     void move_to_ram(const const_iterator& itr) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to move_to_ram");
         move_to_ram(*itr);
     }
 
+    /**
+    *  The @ref move_to_archive method is used to move rarely used objects from the table to an archive (the object is searched by its value). Moving an object is performed in order to reduce the size of cached code and therefore save storage usage.
+    *  @ingroup multiindex
+    *
+    *  @param obj - a reference to the object to be moved
+    *
+    *  @pre The object is an existing object in the table.
+    *  @post The object is moved from the table and cached code no longer contains it.
+    *
+    *  > @b Exceptions  
+    *  > The object to be moved is not in the table.  
+    *  > The object to be moved is already in archive.  
+    *  > The object to be moved belongs to a table of another contract.
+    */
     void move_to_archive(reference obj) const {
         auto& itm = static_cast<item&>(const_cast<T&>(obj));
 
@@ -1344,6 +1663,20 @@ public:
         itm.service_.in_ram = false;
     }
 
+    /**
+    *  The @ref move_to_archive method is used to move rarely used objects from the table to an archive (the object is searched by the given iterator). Moving an object is performed in order to reduce the size of cached code and therefore save storage usage.
+    *  @ingroup multiindex
+    *
+    *  @param itr - an iterator pointing to the object to be moved
+    *
+    *  @pre The object is an existing object in the table.
+    *  @post The object is moved from the table and cached code no longer contains it.
+    *
+    *  > @b Exceptions  
+    *  > The object to be moved is not in the table.  
+    *  > The object to be moved is already in archive.  
+    *  > The object to be moved belongs to a table of another contract.
+    */
     void move_to_archive(const const_iterator& itr) const {
         chaindb_assert(itr != end(), "cannot pass end iterator to move_to_archive");
         move_to_archive(*itr);

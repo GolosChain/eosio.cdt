@@ -1,6 +1,7 @@
 /**
  *  @file datastream.hpp
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberway/LICENSE
  */
 #pragma once
 #include "check.hpp"
@@ -254,7 +255,7 @@ class datastream<size_t> {
  *  Serialize an std::list into a stream
  *
  *  @param ds - The stream to write
- *  @param opt - The value to serialize
+ *  @param l - The value to serialize
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */
@@ -270,7 +271,7 @@ inline datastream<Stream>& operator<<(datastream<Stream>& ds, const std::list<T>
  *  Deserialize an std::list from a stream
  *
  *  @param ds - The stream to read
- *  @param opt - The destination for deserialized value
+ *  @param l - The destination for deserialized value
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */
@@ -288,7 +289,7 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, std::list<T>& l) {
  *  Serialize an std::deque into a stream
  *
  *  @param ds - The stream to write
- *  @param opt - The value to serialize
+ *  @param d - The value to serialize
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */
@@ -304,7 +305,7 @@ inline datastream<Stream>& operator<<(datastream<Stream>& ds, const std::deque<T
  *  Deserialize an std::deque from a stream
  *
  *  @param ds - The stream to read
- *  @param opt - The destination for deserialized value
+ *  @param d - The destination for deserialized value
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */
@@ -322,7 +323,7 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, std::deque<T>& d) 
  *  Serialize an std::variant into a stream
  *
  *  @param ds - The stream to write
- *  @param opt - The value to serialize
+ *  @param var - The value to serialize
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */
@@ -353,7 +354,7 @@ void deserialize(datastream<Stream>& ds, std::variant<Ts...>& var, int i) {
  *  Deserialize an std::variant from a stream
  *
  *  @param ds - The stream to read
- *  @param opt - The destination for deserialized value
+ *  @param var - The destination for deserialized value
  *  @tparam Stream - Type of datastream buffer
  *  @return datastream<Stream>& - Reference to the datastream
  */

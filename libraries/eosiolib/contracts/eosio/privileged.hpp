@@ -113,7 +113,7 @@ namespace eosio {
     *
     *  @ingroup privileged
     *  @note Once the block that contains the proposal becomes irreversible, the schedule is promoted to "pending" automatically. Once the block that promotes the schedule is irreversible, the schedule will become "active"
-    *  @param producers - vector of producer keys
+    *  @param prods - vector of producer keys
     *
     *  @return an optional value of the version of the new proposed schedule if successful
     */

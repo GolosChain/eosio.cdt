@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberay/LICENSE
  */
 #pragma once
 #include "action.hpp"
@@ -62,7 +63,7 @@ namespace eosio {
    *  available to the parent transaction or, in the future, delegated to the
    *  contract account for future use.
    *
-   *  @note There are some methods from the @ref transactioncapi that can be used directly from C++
+   *  @note The \ref transaction group contains several methods taken from the @a transaction_c group that can be used directly from C++
    */
 
   /**

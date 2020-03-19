@@ -4,7 +4,7 @@
 
 namespace eosio {
    /**
-    * @defgroup ignore
+    * @defgroup ignore Ignore
     * @ingroup core
     * @brief Enables telling the datastream to ignore this type, but allowing abi generator to add the correct type.
     */
@@ -53,7 +53,7 @@ namespace eosio {
     *
     *  @brief Serialize an ignored type
     *  @param ds - The stream to write
-    *  @param ignore - The value to serialize
+    *  @param val - The value to serialize
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
     */
@@ -67,9 +67,10 @@ namespace eosio {
     *
     *  @brief Deserialize an ignored type
     *  @param ds - The stream to read
-    *  @param ignored - The destination for deserialized value
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
+    *
+    *  The destination for deserialized value is defined by the second parameter.
     */
    template<typename DataStream, typename T>
    inline DataStream& operator>>(DataStream& ds, ::eosio::ignore<T>&) {

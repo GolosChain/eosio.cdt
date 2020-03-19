@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @copyright defined in eos/LICENSE
+ *  @copyright defined in cyberway/LICENSE
  */
 #pragma once
 
@@ -164,7 +165,7 @@ namespace eosio {
       /**
        * Prints a symbol_code
        *
-       * @param sym_code symbol code to be printed
+       * No parameters required
        */
       inline void print()const {
          char buffer[7];
@@ -208,7 +209,7 @@ namespace eosio {
     *  Serialize a symbol_code into a stream
     *
     *  @param ds - The stream to write
-    *  @param sym - The value to serialize
+    *  @param sym_code - The value to serialize
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
     */
@@ -223,7 +224,7 @@ namespace eosio {
     *  Deserialize a symbol_code from a stream
     *
     *  @param ds - The stream to read
-    *  @param symbol - The destination for deserialized value
+    *  @param sym_code - The destination for deserialized value
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
     */
@@ -361,7 +362,7 @@ namespace eosio {
     *
     *  @brief Deserialize a symbol
     *  @param ds - The stream to read
-    *  @param symbol - The destination for deserialized value
+    *  @param sym - The destination for deserialized value
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
     */
