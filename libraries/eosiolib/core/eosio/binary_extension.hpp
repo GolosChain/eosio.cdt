@@ -85,7 +85,7 @@ namespace eosio {
                reset();
 
             if (other.has_value()) {
-               ::new (&_data) T(*other);
+               ::new (&_data) T( *std::move(other) );
                _has_value = true;
                other._has_value = false;
             }
