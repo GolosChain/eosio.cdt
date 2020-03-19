@@ -69,6 +69,29 @@ namespace eosio {
             }
          }
 
+         constexpr binary_extension& operator = (const binary_extension& other) {
+            if (has_value())
+               reset();
+
+            if (other.has_value()) {
+               ::new (&_data) T(*other);
+               _has_value = true;
+            }
+            return *this;
+         }
+
+         constexpr binary_extension& operator = (binary_extension&& other) {
+            if (has_value())
+               reset();
+
+            if (other.has_value()) {
+               ::new (&_data) T(*other);
+               _has_value = true;
+               other._has_value = false;
+            }
+            return *this;
+         }
+
          /** test if container is holding a value */
          constexpr explicit operator bool()const { return _has_value; }
          /** test if container is holding a value */
