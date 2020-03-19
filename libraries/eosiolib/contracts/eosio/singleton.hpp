@@ -113,12 +113,12 @@ namespace  eosio {
           * @param value - New value to be set
           * @param bill_to_account - Account to pay for the new value
           */
-         void set( const T& value, name bill_to_account ) {
+         void set( T value, name bill_to_account ) {
             auto itr = _t.find( pk_value );
             if( itr != _t.end() ) {
-               _t.modify(itr, bill_to_account, [&](row& r) { r.value = value; });
+               _t.modify(itr, bill_to_account, [&](row& r) { r.value = std::move(value); });
             } else {
-               _t.emplace(bill_to_account, [&](row& r) { r.value = value; });
+               _t.emplace(bill_to_account, [&](row& r) { r.value = std::move(value); });
             }
          }
 
