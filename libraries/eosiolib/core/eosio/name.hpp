@@ -1,7 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
- *  @copyright defined in cyberway/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 
@@ -23,7 +22,7 @@ namespace eosio {
     * @defgroup name Name
     * @ingroup core
     * @ingroup types
-    * @brief EOSIO Name Type
+    * @brief CyberWay Name Type
     */
 
    /**

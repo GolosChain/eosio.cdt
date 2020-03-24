@@ -1,7 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
- *  @copyright defined in cyberway/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 #include "action.hpp"
@@ -34,5 +33,5 @@ static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
 /**
  * @defgroup types Types
  * @ingroup modules
- * @brief C++ Types API for data layout of data-structures available for the EOSIO platform.
+ * @brief C++ Types API for data layout of data-structures available for the CyberWay platform.
  */

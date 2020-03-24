@@ -5,16 +5,16 @@
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="no" title="" intro=""/>
     <tab type="usergroup" visible="yes" title="Tools" intro="Documents" >
-      <tab type="user" url="@ref cyberway-eosio-abidiff" visible="yes" title="CyberWay-Eosio Abidiff" />
-      <tab type="user" url="@ref cyberway-eosio-abigen" visible="yes" title="CyberWay-Eosio Abigen" />
-      <tab type="user" url="@ref cyberway-eosio-cpp" visible="yes" title="CyberWay-Eosio Cpp" />
-      <tab type="user" url="@ref cyberway-eosio-init" visible="yes" title="CyberWay-Eosio Init" />
-      <tab type="user" url="@ref cyberway-eosio-ld" visible="yes" title="CyberWay-Eosio Ld" />
+      <tab type="user" url="@ref cyberway-abidiff" visible="yes" title="CyberWay Abidiff" />
+      <tab type="user" url="@ref eosio-abigen" visible="yes" title="Eosio Abigen" />
+      <tab type="user" url="@ref cyberway-cpp" visible="yes" title="CyberWay Cpp" />
+      <tab type="user" url="@ref eosio-init" visible="yes" title="Eosio Init" />
+      <tab type="user" url="@ref eosio-ld" visible="yes" title="Eosio Ld" />
     </tab>
 
-    <tab type="usergroup" visible="yes" title="Upgrading">
-      <tab type="user" url="@ref v12-to-v13" visible="yes" title="1.2 To 1.3" />
-      <tab type="user" url="@ref v15-to-v16" visible="yes" title="1.5 To 1.6" />
+    <tab type="usergroup" visible="yes" title="CyberWay.CDT Specifics">
+      <tab type="user" url="@ref cdt-specifics" visible="yes" title="List of Differences" />
+      <tab type="user" url="@ref no-ricardians" visible="yes" title="No Ricardian Contracts" />
     </tab>
 
     <tab type="usergroup" visible="yes" title="Guides">
@@ -22,7 +22,6 @@
       <tab type="user" url="@ref first-smart-contract" visible="yes" title="First Smart Contract" />
       <tab type="user" url="@ref generator-attributes" visible="yes" title="Generator Attributes" />
       <tab type="user" url="@ref native-tester" visible="yes" title="Native Tester" />
-      <tab type="user" url="@ref no-ricardians" visible="yes" title="No Ricardian Contracts" />
     </tab>
 
     <tab type="usergroup" visible="yes" title="Modules">

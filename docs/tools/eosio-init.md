@@ -1,7 +1,7 @@
- \defgroup cyberway-eosio-init CyberWay-Eosio Init
+ \defgroup eosio-init Eosio Init
  \ingroup md_tools
 
-# cyberway.eosio-init tool
+# eosio-init tool
 
 This tool is used to generate a skeleton smart contract and directory structure.
 To generate a new smart contract project you can either generate a "bare" project (no CMake) or the default is to generate a CMake project.
@@ -9,13 +9,13 @@ To generate a new smart contract project you can either generate a "bare" projec
 Example:
 
 ```bash
-$ cyberway.eosio-abigen hello.cpp --contract=hello --output=hello.abi
+$ eosio-abigen hello.cpp --contract=hello --output=hello.abi
 ```
 
 This will generate one ABI file (hello.abi):
 
 ```
-USAGE: cyberway.eosio-init [options]
+USAGE: eosio-init [options]
 
 OPTIONS:
 
