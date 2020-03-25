@@ -1,3 +1,5 @@
+ \defgroup md_cdt_specifics CyberWay.CDT Specifics
+
  \defgroup cdt-specifics List of Differences
  \ingroup md_cdt_specifics
 

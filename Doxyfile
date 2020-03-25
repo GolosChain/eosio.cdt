@@ -762,7 +762,7 @@ WARN_LOGFILE           =
 
 INPUT                  = docs/main_page.md \
                          docs/tools \
-                         docs/upgrading \
+                         docs/cdt_specifics \
                          docs/guides \
                          libraries/eosiolib/contracts \
                          libraries/eosiolib/core

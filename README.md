@@ -23,11 +23,9 @@ $ sudo ./install.sh
 
  * cyberway-abidiff
  * cyberway-cpp
- * eosio-abidiff
  * eosio-abigen
  * eosio-ar
  * eosio-cc
- * eosio-cpp
  * eosio-init
  * eosio-ld
  * eosio-nm
