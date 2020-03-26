@@ -5,7 +5,7 @@
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="no" title="" intro=""/>
     <tab type="usergroup" visible="yes" title="Tools" intro="Documents" >
-      <tab type="user" url="@ref eosio-abigen" visible="yes" title="Eosio Abigen" />
+      <tab type="user" url="@ref cyberway-abidiff" visible="yes" title="CyberWay Abidiff" />
       <tab type="user" url="@ref cyberway-cpp" visible="yes" title="CyberWay Cpp" />
       <tab type="user" url="@ref eosio-abigen" visible="yes" title="Eosio Abigen" />
       <tab type="user" url="@ref eosio-init" visible="yes" title="Eosio Init" />

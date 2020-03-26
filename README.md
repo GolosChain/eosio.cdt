@@ -24,20 +24,20 @@ $ sudo ./install.sh
  * cyberway-abidiff
  * cyberway-cpp
  * eosio-abigen
- * eosio-ar
  * eosio-cc
  * eosio-init
  * eosio-ld
- * eosio-nm
  * eosio-objcopy
- * eosio-objdump
  * eosio-pp
- * eosio-ranlib
- * eosio-readelf
- * eosio-readobj
- * eosio-strip
  * eosio-wasm2wast
  * eosio-wast2wasm
+ * llvm-ar
+ * llvm-nm
+ * llvm-objdump
+ * llvm-ranlib
+ * llvm-readelf
+ * llvm-readobj
+ * llvm-strip
 
 ## Contributing
 
