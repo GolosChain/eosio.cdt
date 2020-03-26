@@ -7,7 +7,7 @@ namespace  eosio {
    /**
     *  @defgroup singleton Singleton Table
     *  @ingroup contracts
-    *  @brief Defines EOSIO Singleton Table used with %multiindex
+    *  @brief Defines CyberWay Singleton Table used with %multiindex
     */
 
    /**

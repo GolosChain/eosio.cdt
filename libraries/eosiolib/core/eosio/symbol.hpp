@@ -1,7 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
- *  @copyright defined in cyberway/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 

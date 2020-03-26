@@ -7,7 +7,7 @@
 
 ## CMake Configuration
 
-Compiling an EOSIO smart contract with CMake requires a CMake file. The new `cyberway.eosio-init` tool can be used to generate the directory structure stub .hpp/.cpp files and subsequent cmake files. Also, the template `CMakeLists.txt` in the examples folder is a good boilerplate for manual usage.
+Compiling an CyberWay smart contract with CMake requires a CMake file. The `eosio-init` tool can be used to generate the directory structure stub .hpp/.cpp files and subsequent cmake files. Also, the template `CMakeLists.txt` in the examples folder is a good boilerplate for manual usage.
 
 For example:
 

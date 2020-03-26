@@ -1,7 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
- *  @copyright defined in cyberway/LICENSE
+ *  @copyright defined in LICENSE
  */
  
 #pragma once
@@ -139,7 +138,7 @@ namespace eosio {
    }
 
    /**
-    *  This method is used to check if an account has any authorization. It verifies that name exists in the set of provided auths on an action. It works like @ref require_auth, but on @a fail returns bad result instead of breaking.
+    *  Verifies that name exists in the set of provided auths on an action. It works like @ref require_auth, but on @a fail returns `false` instead of expected value.
     *
     *  @ingroup action
     *  @param n - name of the account to be verified
@@ -244,7 +243,7 @@ namespace eosio {
    }
 
    /**
-    *  This method requires the specified authorization to execute an action.
+    *   Verifies that @ref name exists in the set of provided auths on an action.
     *
     *  @ingroup action
     *  @param level - Authorization to be required
@@ -592,9 +591,7 @@ INLINE_ACTION_SENDER3( CONTRACT_CLASS, NAME, ::eosio::name(#NAME) )
  * Send an inline-action from inside a contract.
  *
  * @brief A macro to simplify calling inline actions
- * @details The send inline action macro is intended to simplify the process of calling inline actions. When calling new actions from existing actions 
- * , inline and deferred. Inline actions are executed as part of the current transaction. This macro
- * creates an @ref action using the supplied parameters and automatically calls action.send() on this newly created action.
+ * @details The send inline action macro is intended to simplify the process of calling inline actions. When calling new actions from existing actions CyberWay supports two communication models - inline and deferred. Inline actions are executed as part of the current transaction. This macro creates an @ref action using the supplied parameters and automatically calls action.send() on this newly created action.
  *
  * Example:
  * @code

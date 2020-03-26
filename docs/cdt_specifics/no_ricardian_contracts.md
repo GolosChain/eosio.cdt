@@ -1,5 +1,5 @@
  \defgroup no-ricardians No Ricardian Contracts
- \ingroup md_guides
+ \ingroup md_cdt_specifics
 
 # Removed Ricardian Contracts
 

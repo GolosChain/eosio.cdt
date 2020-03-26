@@ -494,7 +494,7 @@ template<eosio::name::raw TableName> struct upper_bound<TableName, "primary"_n> 
  * @ingroup contracts
  * @brief Defines CyberWay Multi Index Table
  *
- * @details CyberWay Multi-Index table, like EOSIO, requires exactly a uint64_t primary key. For the table to be able to retrieve the primary key, the object stored inside the table is required to have a const member function called primary_key() that returns uint64_t.
+ * @details CyberWay Multi-Index table requires exactly a uint64_t primary key. For the table to be able to retrieve the primary key, the object stored inside the table is required to have a const member function called primary_key() that returns uint64_t.
  * Multi-Index table also supports up to 16 secondary indices.
  */
 template<eosio::name::raw TableName, typename T, typename... Indices>

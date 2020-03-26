@@ -23,7 +23,7 @@ class [[eosio::contract]] hello : public eosio::contract {
 - Now run the compiler.
 
 ```sh
-    $ cyberway.eosio-cpp -abigen hello.cpp -o hello.wasm
+    $ cyberway-cpp -abigen hello.cpp -o hello.wasm
 ```
 
 - Or with CMake

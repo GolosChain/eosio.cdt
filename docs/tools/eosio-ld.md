@@ -1,12 +1,12 @@
- \defgroup cyberway-eosio-ld CyberWay-Eosio Ld
+ \defgroup eosio-ld Eosio Ld
  \ingroup md_tools
 
-# cyberway.eosio-ld tool
+# eosio-ld tool
 
-The cyberway.eosio-ld tool is the custom web assembly linker.
+The eosio-ld tool is the custom web assembly linker.
 
 ```
-USAGE: cyberway.eosio-ld [options] <input file> ...
+USAGE: eosio-ld [options] <input file> ...
 
 OPTIONS:
 

@@ -3,7 +3,7 @@
 
 # Native Tester/Compilation
 
-As of v1.5.0 native compilation can be performed and a new set of libraries to facilitate native testing and native "scratch pad" compilation. `cyberway.eosio-cc`, `cyberway.eosio-cpp` and `cyberway.eosio-ld` now support building "smart contracts" and unit tests natively for quick tests to help facilitate faster development \(note the default implementations of eosio `intrinsics` are currently asserts that state they are unavailable, these are user definable\).
+The tools `eosio-cc`, `cyberway-cpp` and `eosio-ld` now support building "smart contracts" and unit tests natively for quick tests to help facilitate faster development.
 
 ### Getting Started
 
@@ -94,14 +94,14 @@ int main(int argc, char** argv) {
 }
 ```
 
-Every `intrinsic` that is defined for eosio (prints, require_auth, etc.) is redefinable given the `intrinsics::set_intrinsics<intrinsics::the_intrinsic_name>()` functions.  These take a lambda whose arguments and return type should match that of the intrinsic you are trying to define.  This gives the contract writer the flexibility to modify behavior to suit the unit test being written. A sister function `intrinsics::get_intrinsics<intrinsics::the_intrinsic_name>()` will return the function object that currently defines the behavior for said intrinsic.  This pattern can be used to mock functionality and allow for easier testing of smart contracts. For more information please see, either the "./tests" directory or "./examples/hello/tests/hello_test.cpp" for working examples.
+Every `intrinsic` that is defined for CyberWay (prints, require_auth, etc.) is redefinable given the `intrinsics::set_intrinsics<intrinsics::the_intrinsic_name>()` functions.  These take a lambda whose arguments and return type should match that of the intrinsic you are trying to define.  This gives the contract writer the flexibility to modify behavior to suit the unit test being written. A sister function `intrinsics::get_intrinsics<intrinsics::the_intrinsic_name>()` will return the function object that currently defines the behavior for said intrinsic.  This pattern can be used to mock functionality and allow for easier testing of smart contracts. For more information please see, either the "./tests" directory or "./examples/hello/tests/hello_test.cpp" for working examples.
 
 ### Compiling Native Code
-- Raw `eosio-cpp` to compile the test or program the only addition needed to the command line is to add the flag `-fnative` this will then generate native code instead of `wasm` code.
+- Raw `cyberway-cpp` to compile the test or program the only addition needed to the command line is to add the flag `-fnative` this will then generate native code instead of `wasm` code.
 - Via CMake:
     - `add_native_library` and `add_native_executable` CMake macros have been added (these are a drop in replacement for add_library and add_executable).
 
-### Eosio.CDT Native Tester API
+### CyberWay.CDT Native Tester API
 - CHECK_ASSERT(...) : This macro will check whether a particular assert has occured and flag the tests as failed but allow the rest of the tests to run.  
     - This is called either by 
         - `CHECK_ASSERT("<assert message>", [](<args>){ whatever_function(<args>); })`
