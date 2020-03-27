@@ -262,19 +262,6 @@ color:#3892e3;
 
 /* docs list */
 
-#doc-content::-webkit-scrollbar{
-width:0!important;
-height:0;
-}
-
-#doc-content {
-  overflow:auto;
-  display:block;
-  padding:0px;
-  margin:0px;
-  -webkit-overflow-scrolling : touch; /* iOS 5+ */
-}
-
 #nav-tree ul.children_ul ul.children_ul div.item span.label a{
 font-weight: normal;
 font-size: 13px;
@@ -355,6 +342,19 @@ overflow: unset; /* new */
   background-image: url('navlogo.png');
   background-repeat: no-repeat;
   margin-top:15px;
+}
+
+#doc-content::-webkit-scrollbar{
+width:0!important;
+height:0;
+}
+
+#doc-content {
+  overflow:auto;
+  display:block;
+  padding:0px;
+  margin:0px;
+  -webkit-overflow-scrolling : touch; /* iOS 5+ */
 }
 
 #side-nav {
