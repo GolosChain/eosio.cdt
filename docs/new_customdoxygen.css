@@ -369,7 +369,7 @@ overflow: unset; /* new */
     -ms-flex: 1 0 20%;
     flex: 1 0 20%;
     z-index: 10;
-    min-width: 300px;
+    min-width: 250px;
     max-width: 376px;
     background: #f6f7f9;
     background: -webkit-gradient(linear,left top,right top,from(#f7f8f9),color-stop(76.5%,#f6f7f8),color-stop(85%,#f5f6f7),color-stop(90%,#f2f3f4),color-stop(95%,#eff0f1),to(#eaebec));
