@@ -1,5 +1,9 @@
 /* The standard CSS for doxygen 1.8.14 */
 
+* {
+    margin: 0px;
+}
+
 body, table, div, p, dl {
 	font: 400 14px/22px Roboto,sans-serif;
 }
