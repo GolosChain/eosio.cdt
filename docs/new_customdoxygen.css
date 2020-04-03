@@ -1,5 +1,9 @@
 /* The standard CSS for doxygen 1.8.14 */
 
+* {
+    margin: 0px;
+}
+
 body, table, div, p, dl {
     font: 400 14px/22px Roboto,sans-serif;
 }
@@ -339,22 +343,22 @@ a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
 }
 
 #nav-tree {
-    background-image: url('navlogo.png');
-    background-repeat: no-repeat;
-    margin-top: 15px;
+  background-image: url('navlogo.png');
+  background-repeat: no-repeat;
+  margin-top:15px;
 }
 
 #doc-content::-webkit-scrollbar{
-    width: 0!important;
-    height: 0;
+width:0!important;
+height:0;
 }
 
 #doc-content {
-    overflow: auto;
-    display: block;
-    padding: 0px;
-    margin: 0px;
-    -webkit-overflow-scrolling : touch; /* iOS 5+ */
+  overflow:auto;
+  display:block;
+  padding:0px;
+  margin:0px;
+  -webkit-overflow-scrolling : touch; /* iOS 5+ */
 }
 
 #side-nav {
@@ -2189,7 +2193,7 @@ ul li code, ul li code a.el, p code, dd code {
 
 /* NewFooter11 */
 .NewFooter11{
-m    ax-width: 100%;
+    max-width: 100%;
     -webkit-flex-basis: 0;
     -ms-flex-preferred-size: 0;
     flex-basis: 0;
