@@ -22,10 +22,10 @@
 namespace eosio {
 
 /**
- * %Base class for EOSIO contract.
+ * %Base class for CyberWay contract.
  *
  * @ingroup contract
- * @details %Base class for EOSIO contract. %A new contract should derive from this class, so it can make use of EOSIO_ABI macro.
+ * @details %Base class for CyberWay contract. %A new contract should derive from this class, so it can make use of EOSIO_ABI macro.
  */
 class contract {
    public:

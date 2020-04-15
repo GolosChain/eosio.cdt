@@ -7,7 +7,7 @@ namespace  eosio {
    /**
     *  @defgroup singleton Singleton Table
     *  @ingroup contracts
-    *  @brief Defines EOSIO Singleton Table used with %multiindex
+    *  @brief Defines CyberWay Singleton Table used with %multiindex
     */
 
    /**
@@ -67,7 +67,7 @@ namespace  eosio {
           * @return true - if exists
           * @return false - otherwise
           */
-         bool exists() {
+         bool exists() const {
             return _t.find( pk_value ) != _t.end();
          }
 
@@ -77,7 +77,7 @@ namespace  eosio {
           * @brief Get the value stored inside the singleton table
           * @return T - The value stored
           */
-         T get() {
+         const T& get() const {
             auto itr = _t.find( pk_value );
             eosio::check( itr != _t.end(), "singleton does not exist" );
             return itr->value;
@@ -113,12 +113,12 @@ namespace  eosio {
           * @param value - New value to be set
           * @param bill_to_account - Account to pay for the new value
           */
-         void set( const T& value, name bill_to_account ) {
+         void set( T value, name bill_to_account ) {
             auto itr = _t.find( pk_value );
             if( itr != _t.end() ) {
-               _t.modify(itr, bill_to_account, [&](row& r) { r.value = value; });
+               _t.modify(itr, bill_to_account, [&](row& r) { r.value = std::move(value); });
             } else {
-               _t.emplace(bill_to_account, [&](row& r) { r.value = value; });
+               _t.emplace(bill_to_account, [&](row& r) { r.value = std::move(value); });
             }
          }
 

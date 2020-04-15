@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 #include "types.h"
@@ -95,7 +95,7 @@ __attribute__((eosio_wasm_import))
 void require_recipient( capi_name name );
 
 /**
- *  Verifies that name exists in the set of provided auths on a action. Throws if not found.
+ *  Verifies that name exists in the set of provided auths on an action. Throws if not found.
  *
  *  @brief Verify specified account exists in the set of provided auths
  *  @param name - name of the account to be verified
@@ -104,11 +104,11 @@ __attribute__((eosio_wasm_import))
 void require_auth( capi_name name );
 
 /**
- *  Verifies that name exists in the set of provided auths on a action.
+ *  This method is used to check if an account has any authorization. It verifies that name exists in the set of provided auths on an action. It works like @ref require_auth, but on @a fail returns bad result instead of breaking.
  *
- *  @brief Verify specified account exists in the set of provided auths
+ *  @brief The method verifies whether specified account exists in the set of provided auths or not
  *  @param name - name of the account to be verified
- *  @return true if name exists in the set of provided auths
+ *  @return @a true if name exists in the set of provided auths
  */
 __attribute__((eosio_wasm_import))
 bool weak_require_auth( capi_name name );
@@ -123,7 +123,7 @@ __attribute__((eosio_wasm_import))
 bool has_auth( capi_name name );
 
 /**
- *  Verifies that name exists in the set of provided auths on a action. Throws if not found.
+ *  Verifies that name exists in the set of provided auths on an action. Throws if not found.
  *
  *  @brief Verify specified account exists in the set of provided auths
  *  @param name - name of the account to be verified
@@ -133,12 +133,12 @@ __attribute__((eosio_wasm_import))
 void require_auth2( capi_name name, capi_name permission );
 
 /**
- *  Verifies that name exists in the set of provided auths on a action.
+ *  This method verifies that specified name exists in the set of provided auths and has an appropriate permission level to execute an action. It works like @ref require_auth2, but on @a fail returns bad result instead of breaking.
  *
- *  @brief Verify specified account exists in the set of provided auths
+ *  @brief The method verifies whether specified account exists in the set of provided auths or not
  *  @param name - name of the account to be verified
  *  @param permission - permission level to be verified
- *  @return true if names exists in the set of provided auths
+ *  @return @a true if name exists in the set of provided auths. If an error occurs, this method does not interrupt processing and returns @a false as a result of checking.
  */
 __attribute__((eosio_wasm_import))
 bool weak_require_auth2( capi_name name, capi_name permission );

@@ -29,16 +29,14 @@ namespace eosio {
    /// @endcond
 
    /**
-    * This method will dynamically dispatch an incoming set of actions to
+    * @brief This method will dynamically dispatch an incoming set of actions to
     *
     * ```
     * static Contract::on( ActionType )
     * ```
     *
-    * For this to work the Actions must be derived from eosio::contract
-    *
     * @ingroup dispatcher
-    *
+    * For this to work the Actions must be derived from eosio::contract
     */
    template<typename Contract, typename FirstAction, typename SecondAction, typename... Actions>
    bool dispatch( uint64_t code, uint64_t act ) {
@@ -53,13 +51,14 @@ namespace eosio {
 
 
    /**
-    * Unpack the received action and execute the correponding action handler
+    * @brief Unpack the received action and execute the correponding action handler
     *
     * @ingroup dispatcher
     * @tparam T - The contract class that has the correponding action handler, this contract should be derived from eosio::contract
     * @tparam Q - The namespace of the action handler function
     * @tparam Args - The arguments that the action handler accepts, i.e. members of the action
-    * @param obj - The contract object that has the correponding action handler
+    * @param self - The name of the account this contract is deployed on
+    * @param code - The contract object that has the correponding action handler
     * @param func - The action handler
     * @return true
     */
@@ -107,7 +106,7 @@ namespace eosio {
 /// @endcond
 
 /**
- * Convenient macro to create contract apply handler
+ * @brief Convenient macro to create contract apply handler
  *
  * @ingroup dispatcher
  * @note To be able to use this macro, the contract needs to be derived from eosio::contract

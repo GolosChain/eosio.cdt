@@ -11,15 +11,27 @@ namespace eosio {
     */
 
     /**
+    *  Writing strategy for binary_extension if it doesn't have value
+    *
+    *  @ingroup binary_extension
+    */
+   enum class write_strategy {
+      default_value, ///! If there is no value, write the default value to a data stream
+      no_value ///! If there is no value, don't write a value to a data stream
+   };
+
+    /**
     *  Container to hold a binary payload for an extension
     *
     *  @ingroup binary_extension
     *  @tparam T - Contained typed
+    *  @tparam S - Writing strategy for no value
     */
-   template <typename T>
+   template <typename T,  write_strategy S = write_strategy::default_value>
    class binary_extension {
       public:
          using value_type = T;
+
 
          constexpr binary_extension() {}
          constexpr binary_extension( const T& ext )
@@ -55,6 +67,29 @@ namespace eosio {
                ::new (&_data) T( *std::move(other) );
                other._has_value = false;
             }
+         }
+
+         constexpr binary_extension& operator = (const binary_extension& other) {
+            if (has_value())
+               reset();
+
+            if (other.has_value()) {
+               ::new (&_data) T(*other);
+               _has_value = true;
+            }
+            return *this;
+         }
+
+         constexpr binary_extension& operator = (binary_extension&& other) {
+            if (has_value())
+               reset();
+
+            if (other.has_value()) {
+               ::new (&_data) T( *std::move(other) );
+               _has_value = true;
+               other._has_value = false;
+            }
+            return *this;
          }
 
          /** test if container is holding a value */
@@ -169,7 +204,7 @@ namespace eosio {
    /// @cond IMPLEMENTATIONS
 
    /**
-    *  Serialize a binary_extension into a stream
+    *  Serialize a binary_extension into a stream for write_strategy::default_value
     *
     *  @ingroup binary_extension
     *  @brief Serialize a binary_extension
@@ -179,9 +214,27 @@ namespace eosio {
     *  @return DataStream& - Reference to the datastream
     */
    template<typename DataStream, typename T>
-   inline DataStream& operator<<(DataStream& ds, const eosio::binary_extension<T>& be) {
+   inline DataStream& operator<<(DataStream& ds, const eosio::binary_extension<T, write_strategy::default_value>& be) {
      ds << be.value_or();
      return ds;
+   }
+
+   /**
+    *  Serialize a binary_extension into a stream for write_strategy::no_value
+    *
+    *  @ingroup binary_extension
+    *  @brief Serialize a binary_extension
+    *  @param ds - The stream to write
+    *  @param opt - The value to serialize
+    *  @tparam DataStream - Type of datastream buffer
+    *  @return DataStream& - Reference to the datastream
+    */
+   template<typename DataStream, typename T>
+   inline DataStream& operator<<(DataStream& ds, const eosio::binary_extension<T, write_strategy::no_value>& be) {
+      if (be.has_value()) {
+         ds << be.value();
+      }
+      return ds;
    }
 
    /**
@@ -194,8 +247,8 @@ namespace eosio {
     *  @tparam DataStream - Type of datastream buffer
     *  @return DataStream& - Reference to the datastream
     */
-   template<typename DataStream, typename T>
-   inline DataStream& operator>>(DataStream& ds, eosio::binary_extension<T>& be) {
+   template<typename DataStream, typename T, eosio::write_strategy S>
+   inline DataStream& operator>>(DataStream& ds, eosio::binary_extension<T, S>& be) {
      if( ds.remaining() ) {
         T val;
         ds >> val;

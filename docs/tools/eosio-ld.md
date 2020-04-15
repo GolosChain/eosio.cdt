@@ -1,5 +1,10 @@
-### eosio-ld
----
+ \defgroup eosio-ld Eosio Ld
+ \ingroup md_tools
+
+# eosio-ld tool
+
+The eosio-ld tool is the custom web assembly linker.
+
 ```
 USAGE: eosio-ld [options] <input file> ...
 

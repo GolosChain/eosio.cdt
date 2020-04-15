@@ -20,18 +20,24 @@ $ sudo ./install.sh
 ```
 
 ### Installed Tools
----
-* eosio-cpp
-* eosio-cc
-* eosio-ld
-* eosio-init
-* eosio-abidiff
-* eosio-wasm2wast
-* eosio-wast2wasm
-* eosio-ranlib
-* eosio-ar
-* eosio-objdump
-* eosio-readelf
+
+ * cyberway-abidiff
+ * cyberway-cpp
+ * eosio-abigen
+ * eosio-cc
+ * eosio-init
+ * eosio-ld
+ * eosio-objcopy
+ * eosio-pp
+ * eosio-wasm2wast
+ * eosio-wast2wasm
+ * llvm-ar
+ * llvm-nm
+ * llvm-objdump
+ * llvm-ranlib
+ * llvm-readelf
+ * llvm-readobj
+ * llvm-strip
 
 ## Contributing
 

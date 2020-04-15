@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 
@@ -19,10 +19,10 @@ namespace eosio {
    }
 
    /**
-    * @defgroup name
+    * @defgroup name Name
     * @ingroup core
     * @ingroup types
-    * @brief EOSIO Name Type
+    * @brief CyberWay Name Type
     */
 
    /**
@@ -227,9 +227,9 @@ namespace eosio {
       }
 
       /**
-       * Prints an names as base32 encoded string
+       * Prints the names as base32 encoded string
        *
-       * @param name to be printed
+       * No parameters required
        */
       inline void print()const {
         internal_use_do_not_use::printn(value);

@@ -1,11 +1,14 @@
-### Usage
----
-To manually compile the source code, use `eosio-cpp/eosio-cc` and `eosio-ld` as if it were __clang__ and __lld__. All the includes and options specific to EOSIO and CDT are baked in.
+ \defgroup cyberway-cpp CyberWay Cpp
+ \ingroup md_tools
 
-###$ eosio-cpp
----
+# cyberway-cpp tool
+
+To manually compile the source code, use `cyberway-cpp/eosio-cc` and `eosio-ld` as if it were __clang__ and __lld__. All the includes and options specific to CyberWay and CDT are baked in.
+
+### Usage
+
 ```
-USAGE: eosio-cpp [options] <input file> ...
+USAGE: cyberway-cpp [options] <input file> ...
 
 OPTIONS:
 

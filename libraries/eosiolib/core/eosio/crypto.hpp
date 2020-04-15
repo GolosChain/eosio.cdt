@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 
@@ -20,7 +20,7 @@ namespace eosio {
     */
 
    /**
-    *  EOSIO Public Key
+    *  CyberWay Public Key
     *
     *  @ingroup public_key
     */
@@ -91,7 +91,7 @@ namespace eosio {
     */
 
    /**
-    *  EOSIO Signature
+    *  CyberWay Signature
     *
     *  @ingroup signature
     */

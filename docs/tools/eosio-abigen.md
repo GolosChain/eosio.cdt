@@ -1,15 +1,19 @@
-# eosio-abigen
-### This tool is deprecated, please use `eosio-cpp` for generation of your ABIs
-To generate an ABI with ```eosio-abigen```, only requires that you give the main '.cpp' file to compile and the output filename `--output` and generating against the contract name `--contract`.
+ \defgroup eosio-abigen Eosio Abigen
+ \ingroup md_tools
+
+# eosio-abigen tool
+
+> **This tool is deprecated, please use *cyberway-cpp* for generation of your ABIs.**  
+To generate an ABI with `eosio-abigen`, only requires that you give the main ".cpp" file to compile and the output filename `--output` and generating against the contract name `--contract`.
 
 Example:
+
 ```bash
 $ eosio-abigen hello.cpp --contract=hello --output=hello.abi
 ```
 
-This will generate one file:
-* The generated ABI file (hello.abi)
----
+This will generate one ABI file (hello.abi):
+
 ```
 USAGE: eosio-abigen [options] <source0> [... <sourceN>]
 
@@ -29,3 +33,4 @@ generates an ABI from C++ project input
   -output=<string>           - Set the output filename and fullpath
   -p=<string>                - Build path
 ```
+

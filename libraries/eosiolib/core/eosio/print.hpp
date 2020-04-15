@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in LICENSE
  */
 #pragma once
 #include <utility>
@@ -59,8 +59,9 @@ namespace eosio {
     *  ```
     *     print( "hello world, this is a number: ", 5 );
     *  ```
-    *
-    *  @section override Overriding Print for your Types
+    */
+
+    /*  @section override Overriding Print for your Types
     *
     *  There are two ways to overload print:
     *  1. implement void print( const T& )
